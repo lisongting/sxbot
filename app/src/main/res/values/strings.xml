@@ -1,0 +1,43 @@
+<resources>
+<!--
+  ~ Copyright 2017 lisongting
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+    <string name="app_name">XBot-U助手</string>
+
+    <string name="key_broadcast_ros_connection">ros_conn_status</string>
+
+    <string name="pref_key_ros_server_ip">ros_server_ip</string>
+
+    <string name="pref_key_speed">xbot_speed</string>
+
+    <string name="pref_speed_summary">0.3</string>
+
+    <string name="battery_text">电量</string>
+
+    <string name="text_loading">加载中，请稍候</string>
+    <string name="text_retry">加载失败，点击重试</string>
+    <string name="load_fail_check_config">请检查网络或服务器配置</string>
+
+    <string name="register_hint">请输入你的姓名</string>
+
+    <string name="register_capture_image">采集头像</string>
+
+    <string name="cancel">取消</string>
+    <string name="camera_shoot">拍照</string>
+    <string name="button_retry">重拍</string>
+    <string name="button_ok">确认注册</string>
+    <string name="button_home">返回主界面</string>
+
+</resources>
