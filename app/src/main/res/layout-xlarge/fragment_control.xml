@@ -20,18 +20,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
+        android:id="@+id/view_parent"
         android:layout_width="wrap_content"
-        android:layout_height="500dp">
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true">
         <SurfaceView
             android:id="@+id/sv_video"
             android:layout_width="match_parent"
-            android:layout_height="500dp" />
-
+            android:layout_height="match_parent"
+            />
         <RelativeLayout
             android:id="@+id/top_bar"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/videoBarColor">
+            android:background="@color/videoBarColor"
+            android:layout_centerHorizontal="true">
             <TextView
                 android:id="@+id/tv_title"
                 android:layout_width="wrap_content"
@@ -46,9 +49,10 @@
 
         <RelativeLayout
             android:id="@+id/bottom_bar"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/videoBarColor"
+            android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true">
             <ImageButton
                 android:id="@+id/ib_play_state"
@@ -90,8 +94,8 @@
         android:id="@+id/rocker_view"
         android:layout_width="180dp"
         android:layout_height="180dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         app:areaBackground="@drawable/default_background"

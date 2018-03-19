@@ -47,6 +47,9 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import tv.danmaku.ijk.media.player.IMediaPlayer;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+
 
 /**
  * Created by lisongting on 2017/10/20.
@@ -111,7 +114,7 @@ public class ControlFragment extends Fragment implements ControlContract.View {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_control_landscape, null);
+        View v = inflater.inflate(R.layout.fragment_control, null);
         surfaceView = (SurfaceView) v.findViewById(R.id.sv_video);
         topBar = (RelativeLayout) v.findViewById(R.id.top_bar);
         bottomBar = (RelativeLayout) v.findViewById(R.id.bottom_bar);
@@ -133,29 +136,38 @@ public class ControlFragment extends Fragment implements ControlContract.View {
     public void initView() {
         waitAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.watting_anim);
         waitAnimation.setInterpolator(new LinearInterpolator());
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) relativeLayout.getLayoutParams();
-
         DisplayMetrics metrics = Util.getScreenInfo(getContext());
-        log(metrics.toString());
         int small = metrics.widthPixels > metrics.heightPixels ? metrics.heightPixels : metrics.widthPixels;
-        params.width = (int) (small*0.6 * scale);
-        params.height = (int) (small*0.6);
-        params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        relativeLayout.setLayoutParams(params);
-
+        RelativeLayout.LayoutParams params1 = (RelativeLayout.LayoutParams) relativeLayout.getLayoutParams();
         RelativeLayout.LayoutParams params2 = (RelativeLayout.LayoutParams) topBar.getLayoutParams();
-        params2.width = (int) (small*0.6 * scale);
-        params2.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        topBar.setLayoutParams(params2);
-
         RelativeLayout.LayoutParams params3 = (RelativeLayout.LayoutParams) bottomBar.getLayoutParams();
-        params3.width = (int) (small * 0.6 * scale);
-        params3.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+        //根据横屏还是竖屏进行控件大小自适应
+        if (Util.isPotrait(getContext())) {
+            params1.width = metrics.widthPixels;
+            params1.height = (int) (metrics.widthPixels / scale);
+
+            params2.width = metrics.widthPixels;
+            params3.width = metrics.widthPixels;
+        } else {
+            params1.width = (int) (small*0.6 * scale);
+            params1.height = (int) (small*0.6);
+            params1.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+            params2.width = (int) (small*0.6 * scale);
+            params2.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+            params3.width = (int) (small * 0.6 * scale);
+            params3.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        }
+        relativeLayout.setLayoutParams(params1);
+        topBar.setLayoutParams(params2);
         bottomBar.setLayoutParams(params3);
 
-        log("size:" + params.width + "x" + params.height);
-        log("size:" + params2.width + "x" + params2.height);
-        log("size:" + params3.width + "x" + params3.height);
+        log(metrics.toString());
+
+//        log("size:" + params2.width + "x" + params2.height);
+//        log("size:" + params3.width + "x" + params3.height);
 
     }
 

@@ -15,7 +15,6 @@
  */
 package com.droid.sxbot.mvp.robot_state;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -48,6 +47,8 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
     private Switch switcher;
     private Button btReset;
     private Button btThreeDimension;
+    public static final int ORIENTATION_PORTRAIT = 1;
+    public static final int ORIENTATION_LANDSCAPE = 2;
 
     public RobotStateFragment() {
 
@@ -56,7 +57,14 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_robot_state_landscape, container, false);
+        View view = null;
+        Bundle b = getArguments() ;
+        int orientation = b.getInt("orientation",ORIENTATION_PORTRAIT);
+        if (orientation == ORIENTATION_PORTRAIT) {
+            view = inflater.inflate(R.layout.fragment_robot_state, container, false);
+        } else if (orientation == ORIENTATION_LANDSCAPE) {
+            view = inflater.inflate(R.layout.fragment_robot_state_landscape, container, false);
+        }
         batteryView = view.findViewById(R.id.battery_view);
         cloudDegreeSeekBar =  view.findViewById(R.id.seekbar_cloud_degree);
         cameraDegreeSeekBar =  view.findViewById(R.id.seekbar_camera_degree);
@@ -140,12 +148,12 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
                 cloudDegreeSeekBar.setValue(0);
             }
         });
-        btThreeDimension.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getContext(), RobotActivity.class));
-            }
-        });
+//        btThreeDimension.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startActivity(new Intent(getContext(), RobotActivity.class));
+//            }
+//        });
 
     }
 
@@ -220,6 +228,20 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
             presenter.destroy();
         }
 
+    }
+    public RobotState getRobotState() {
+        return new RobotState(batteryView.getPercent(),
+                0,
+                cloudDegreeSeekBar.getRealValue(),
+                cameraDegreeSeekBar.getRealValue());
+    }
+
+    public boolean isSwitchOn(){
+        return switcher.isChecked();
+    }
+
+    public void setSwitchOn(boolean on) {
+        switcher.setChecked(on);
     }
 
     private void log(String s){

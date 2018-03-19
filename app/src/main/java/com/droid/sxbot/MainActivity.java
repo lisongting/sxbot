@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -39,6 +40,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.droid.sxbot.entity.RobotState;
 import com.droid.sxbot.mvp.control.ControlFragment;
 import com.droid.sxbot.mvp.control.ControlPresenter;
 import com.droid.sxbot.mvp.robot_state.RobotStateFragment;
@@ -97,7 +99,14 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             log("savedInstanceState is null");
             fragmentManager = getSupportFragmentManager();
+            Bundle b = new Bundle();
+            if (Util.isPotrait(this)) {
+                b.putInt("orientation", RobotStateFragment.ORIENTATION_PORTRAIT);
+            }else{
+                b.putInt("orientation",RobotStateFragment.ORIENTATION_LANDSCAPE);
+            }
             robotStateFragment = new RobotStateFragment();
+            robotStateFragment.setArguments(b);
             controlFragment = new ControlFragment();
 
             fragmentManager.beginTransaction()
@@ -132,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
                 new int[]{getResources().getColor(R.color.colorPrimary, null), Color.GRAY});
         bottomNavigationView.setItemIconTintList(list);
         bottomNavigationView.setItemTextColor(list);
-
 
         initBroadcastReceiver();
     }
@@ -223,6 +231,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        FragmentManager manager = getSupportFragmentManager();
+        RobotState robotState = robotStateFragment.getRobotState();
+        boolean openSwitch = robotStateFragment.isSwitchOn();
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (!robotStateFragment.isHidden()) {
+                manager.beginTransaction()
+                        .remove(robotStateFragment)
+                        .commit();
+                robotStateFragment = new RobotStateFragment();
+                Bundle b = new Bundle();
+                b.putInt("orientation", RobotStateFragment.ORIENTATION_PORTRAIT);
+                robotStateFragment.setArguments(b);
+                manager.beginTransaction()
+                        .add(R.id.container,robotStateFragment, robotStateFragment.getClass().getSimpleName())
+                        .hide(controlFragment)
+                        .show(robotStateFragment)
+                        .commit();
+                robotStateFragment.updateRobotState(robotState);
+                robotStateFragment.setSwitchOn(openSwitch);
+            }
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (!robotStateFragment.isHidden()) {
+                manager.beginTransaction()
+                        .remove(robotStateFragment)
+                        .commit();
+                robotStateFragment = new RobotStateFragment();
+                Bundle b = new Bundle();
+                b.putInt("orientation", RobotStateFragment.ORIENTATION_LANDSCAPE);
+                robotStateFragment.setArguments(b);
+                manager.beginTransaction()
+                        .add(R.id.container,robotStateFragment, robotStateFragment.getClass().getSimpleName())
+                        .hide(controlFragment)
+                        .show(robotStateFragment)
+                        .commit();
+                robotStateFragment.updateRobotState(robotState);
+                robotStateFragment.setSwitchOn(openSwitch);
+            }
+
+        }
+
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         log("onSaveInstanceState()");
         super.onSaveInstanceState(outState);
@@ -232,9 +286,6 @@ public class MainActivity extends AppCompatActivity {
         if (controlFragment.isAdded()) {
             fragmentManager.putFragment(outState, controlFragment.getClass().getSimpleName(), controlFragment);
         }
-//        if (userFragment.isAdded()) {
-//            fragmentManager.putFragment(outState, userFragment.getClass().getSimpleName(), userFragment);
-//        }
         outState.putInt(KEY_NAV_ITEM, selectedNavItem);
 
     }
