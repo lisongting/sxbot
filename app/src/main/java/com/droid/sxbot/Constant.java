@@ -32,7 +32,7 @@ public class Constant {
     public static final int CONN_ROS_SERVER_ERROR = 0x12;
 
     //Intentfilter的action值，用于区别广播
-    public static final String ROS_RECEIVER_INTENTFILTER = "xbotplayer.rosconnection.receiver";
+    public static final String ROS_RECEIVER_INTENTFILTER = "sxbot.rosconnection.receiver";
 
     //rgb图像的URL后缀
     public static final String CAMERA_RGB_RTMP_SUFFIX = "/rgb";

@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -40,9 +39,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.droid.sxbot.entity.RobotState;
 import com.droid.sxbot.mvp.control.ControlFragment;
 import com.droid.sxbot.mvp.control.ControlPresenter;
+import com.droid.sxbot.mvp.map.MapFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStateFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStatePresenter;
 import com.droid.sxbot.util.Util;
@@ -63,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private ControlFragment controlFragment;
     private ControlPresenter controlPresenter;
     private RobotStatePresenter robotStatePresenter;
+    private MapFragment mapFragment;
 
     private long lastExitTime;
     private FragmentManager fragmentManager;
@@ -77,12 +77,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         log("onCreate()");
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_main);
 
-        if (Util.isPotrait(this)) {
-            setContentView(R.layout.activity_main_portrait);
-        } else {
-            setContentView(R.layout.activity_main_landscape);
-        }
         bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         pageTitle = (TextView) findViewById(R.id.page_title);
         settingButton = (ImageButton) findViewById(R.id.setting_button);
@@ -97,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         initConfiguration();
 
         if (savedInstanceState == null) {
-            log("savedInstanceState is null");
+//            log("savedInstanceState is null");
             fragmentManager = getSupportFragmentManager();
             Bundle b = new Bundle();
             if (Util.isPotrait(this)) {
@@ -108,17 +104,28 @@ public class MainActivity extends AppCompatActivity {
             robotStateFragment = new RobotStateFragment();
             robotStateFragment.setArguments(b);
             controlFragment = new ControlFragment();
+            mapFragment = new MapFragment();
 
             fragmentManager.beginTransaction()
                 .add(R.id.container, robotStateFragment, robotStateFragment.getClass().getSimpleName())
                 .add(R.id.container, controlFragment, controlFragment.getClass().getSimpleName())
+                .add(R.id.container,mapFragment,mapFragment.getClass().getSimpleName())
                 .commit();
             bottomNavigationView.setSelectedItemId(R.id.robot_state);
         } else {
             log("restore savedInstanceState ");
             fragmentManager = getSupportFragmentManager();
-            robotStateFragment = (RobotStateFragment) fragmentManager.findFragmentByTag(RobotStateFragment.class.getSimpleName());
-            controlFragment = (ControlFragment) fragmentManager.findFragmentByTag(ControlFragment.class.getSimpleName());
+            Bundle b = new Bundle();
+            if (Util.isPotrait(this)) {
+                b.putInt("orientation", RobotStateFragment.ORIENTATION_PORTRAIT);
+            } else {
+                b.putInt("orientation", RobotStateFragment.ORIENTATION_LANDSCAPE);
+            }
+            robotStateFragment = (RobotStateFragment) fragmentManager.getFragment(savedInstanceState, RobotStateFragment.class.getSimpleName());
+            controlFragment = (ControlFragment) fragmentManager.getFragment(savedInstanceState, ControlFragment.class.getSimpleName());
+            mapFragment = (MapFragment) fragmentManager.getFragment(savedInstanceState, MapFragment.class.getSimpleName());
+            robotStateFragment.setArguments(b);
+            controlFragment.setArguments(b);
             selectedNavItem = savedInstanceState.getInt(KEY_NAV_ITEM);
             switch (selectedNavItem) {
                 case 0:
@@ -126,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 1:
                     bottomNavigationView.setSelectedItemId(R.id.control);
+                    break;
+                case 2:
+                    bottomNavigationView.setSelectedItemId(R.id.scene);
                     break;
                 default:
                     break;
@@ -159,6 +169,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+    }
+
+    @Override
     protected void onResume() {
         log("onResume()");
         super.onResume();
@@ -175,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         pageTitle.setText("Xbot状态");
                         fragmentManager.beginTransaction()
                                 .hide(controlFragment)
+                                .hide(mapFragment)
                                 .show(robotStateFragment)
                                 .commit();
                         selectedNavItem = 0;
@@ -183,10 +200,19 @@ public class MainActivity extends AppCompatActivity {
                         pageTitle.setText("控制界面");
                         fragmentManager.beginTransaction()
                                 .hide(robotStateFragment)
+                                .hide(mapFragment)
                                 .show(controlFragment)
                                 .commit();
                         selectedNavItem = 1;
                         break;
+                    case R.id.scene:
+                        pageTitle.setText("场景");
+                        fragmentManager.beginTransaction()
+                                .hide(robotStateFragment)
+                                .hide(controlFragment)
+                                .show(mapFragment)
+                                .commit();
+                        selectedNavItem = 2;
                     default:
                         break;
                 }
@@ -231,62 +257,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        FragmentManager manager = getSupportFragmentManager();
-        RobotState robotState = robotStateFragment.getRobotState();
-        boolean openSwitch = robotStateFragment.isSwitchOn();
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (!robotStateFragment.isHidden()) {
-                manager.beginTransaction()
-                        .remove(robotStateFragment)
-                        .commit();
-                robotStateFragment = new RobotStateFragment();
-                Bundle b = new Bundle();
-                b.putInt("orientation", RobotStateFragment.ORIENTATION_PORTRAIT);
-                robotStateFragment.setArguments(b);
-                manager.beginTransaction()
-                        .add(R.id.container,robotStateFragment, robotStateFragment.getClass().getSimpleName())
-                        .hide(controlFragment)
-                        .show(robotStateFragment)
-                        .commit();
-                robotStateFragment.updateRobotState(robotState);
-                robotStateFragment.setSwitchOn(openSwitch);
-            }
-
-        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if (!robotStateFragment.isHidden()) {
-                manager.beginTransaction()
-                        .remove(robotStateFragment)
-                        .commit();
-                robotStateFragment = new RobotStateFragment();
-                Bundle b = new Bundle();
-                b.putInt("orientation", RobotStateFragment.ORIENTATION_LANDSCAPE);
-                robotStateFragment.setArguments(b);
-                manager.beginTransaction()
-                        .add(R.id.container,robotStateFragment, robotStateFragment.getClass().getSimpleName())
-                        .hide(controlFragment)
-                        .show(robotStateFragment)
-                        .commit();
-                robotStateFragment.updateRobotState(robotState);
-                robotStateFragment.setSwitchOn(openSwitch);
-            }
-
-        }
-
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         log("onSaveInstanceState()");
-        super.onSaveInstanceState(outState);
-        if (robotStateFragment.isAdded()) {
-            fragmentManager.putFragment(outState, robotStateFragment.getClass().getSimpleName(), robotStateFragment);
-        }
-        if (controlFragment.isAdded()) {
-            fragmentManager.putFragment(outState, controlFragment.getClass().getSimpleName(), controlFragment);
-        }
+        fragmentManager.putFragment(outState, robotStateFragment.getClass().getSimpleName(), robotStateFragment);
+        fragmentManager.putFragment(outState, controlFragment.getClass().getSimpleName(), controlFragment);
+        fragmentManager.putFragment(outState, mapFragment.getClass().getSimpleName(), mapFragment);
+
         outState.putInt(KEY_NAV_ITEM, selectedNavItem);
+        super.onSaveInstanceState(outState);
 
     }
 

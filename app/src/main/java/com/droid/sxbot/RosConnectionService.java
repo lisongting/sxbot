@@ -212,7 +212,7 @@ public class RosConnectionService extends Service {
             public void run() {
                 if (!isConnected) {
                     String rosURL = "ws://" + Config.ROS_SERVER_IP + ":" + Config.ROS_SERVER_PORT;
-                    //Log.v(TAG, "Connecting to ROS Server: " + rosURL);
+                    Log.v(TAG, "Connecting to ROS Server: " + rosURL);
                     rosBridgeClient = new ROSBridgeClient(rosURL);
                     boolean conneSucc = rosBridgeClient.connect(new ROSClient.ConnectionStatusListener() {
                         @Override

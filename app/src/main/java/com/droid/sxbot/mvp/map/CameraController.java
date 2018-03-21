@@ -1,4 +1,4 @@
-package com.droid.sxbot;
+package com.droid.sxbot.mvp.map;
 
 
 import android.graphics.Point;

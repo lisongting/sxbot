@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.droid.sxbot.App;
 import com.droid.sxbot.Config;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.CustomSeekBar;
@@ -50,6 +51,11 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
     public static final int ORIENTATION_PORTRAIT = 1;
     public static final int ORIENTATION_LANDSCAPE = 2;
 
+    private static final String KEY_BATERRY = "battery";
+    private static final String KEY_SWITCH = "machine_power";
+    private static final String KEY_CAMERA_DEGREE = "camera_degree";
+    private static final String KEY_CLOUD_DEGREE = "cloud_degree";
+
     public RobotStateFragment() {
 
     }
@@ -57,6 +63,7 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        log("onCreateView -- savedInstanceState null? :" + (savedInstanceState == null));
         View view = null;
         Bundle b = getArguments() ;
         int orientation = b.getInt("orientation",ORIENTATION_PORTRAIT);
@@ -74,6 +81,16 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
 
         btThreeDimension.setVisibility(View.GONE);
         initListeners();
+        if (savedInstanceState != null) {
+            batteryView.setPercent(savedInstanceState.getInt(KEY_BATERRY, 60));
+            switcher.setChecked(savedInstanceState.getBoolean(KEY_SWITCH, true));
+            cameraDegreeSeekBar.setValue(savedInstanceState.getFloat(KEY_CAMERA_DEGREE, 0f));
+            cloudDegreeSeekBar.setValue(savedInstanceState.getFloat(KEY_CLOUD_DEGREE, 0f));
+            App app = (App) getActivity().getApplication();
+            presenter = new RobotStatePresenter(getContext(), this);
+            presenter.setServiceProxy(app.getRosServiceProxy());
+            presenter.subscribeRobotState();
+        }
 
         return view;
     }
@@ -106,14 +123,14 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
 
         cloudDegreeSeekBar.setOnSeekChangeListener(new CustomSeekBar.OnProgressChangeListener() {
             @Override
-            public void onProgressChanged(int value) {
+            public void onProgressChanged(float value) {
             }
 
             @Override
-            public void onProgressChangeCompleted(int value) {
+            public void onProgressChangeCompleted(float value) {
                 log("cloudDegreeSeekBar value change complete :" + value);
                 if (presenter != null && Config.isRosServerConnected ) {
-                    presenter.publishCloudCameraMsg(value,  cameraDegreeSeekBar.getRealValue());
+                    presenter.publishCloudCameraMsg(Math.round(value), Math.round(cameraDegreeSeekBar.getRealValue()));
                 }else {
                     Toast.makeText(getActivity(), "Ros服务器未连接", Toast.LENGTH_SHORT).show();
                 }
@@ -122,14 +139,14 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
 
         cameraDegreeSeekBar.setOnSeekChangeListener(new CustomSeekBar.OnProgressChangeListener() {
             @Override
-            public void onProgressChanged(int value) {
+            public void onProgressChanged(float value) {
             }
 
             @Override
-            public void onProgressChangeCompleted(int value) {
+            public void onProgressChangeCompleted(float value) {
                 log("cameraDegreeSeekBar value change complete:" + value);
                 if (presenter != null && Config.isRosServerConnected ) {
-                    presenter.publishCloudCameraMsg(cloudDegreeSeekBar.getRealValue(),value);
+                    presenter.publishCloudCameraMsg(Math.round(cloudDegreeSeekBar.getRealValue()), Math.round(value));
                 }else {
                     Toast.makeText(getContext(), "Ros服务器未连接", Toast.LENGTH_SHORT).show();
                 }
@@ -162,6 +179,7 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         log("onCreate()");
+
         super.onCreate(savedInstanceState);
 
     }
@@ -192,7 +210,15 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
         }
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        log("onSavedInstanceState");
+        outState.putInt(KEY_BATERRY, batteryView.getPercent());
+        outState.putBoolean(KEY_SWITCH, switcher.isChecked());
+        outState.putFloat(KEY_CAMERA_DEGREE, cameraDegreeSeekBar.getRealValue());
+        outState.putFloat(KEY_CLOUD_DEGREE, cloudDegreeSeekBar.getRealValue());
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     public void setPresenter(RobotStateContract.Presenter presenter) {
@@ -204,7 +230,7 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
         final int percent = state.getPowerPercent();
         final int cloudDegree = state.getCloudDegree();
         final int cameraDegree = state.getCameraDegree();
-        getActivity().runOnUiThread(new Runnable() {
+        batteryView.post(new Runnable() {
             @Override
             public void run() {
                 batteryView.setPercent(percent);
@@ -232,8 +258,8 @@ public class RobotStateFragment extends Fragment implements RobotStateContract.V
     public RobotState getRobotState() {
         return new RobotState(batteryView.getPercent(),
                 0,
-                cloudDegreeSeekBar.getRealValue(),
-                cameraDegreeSeekBar.getRealValue());
+                Math.round(cloudDegreeSeekBar.getRealValue()),
+                Math.round(cameraDegreeSeekBar.getRealValue()));
     }
 
     public boolean isSwitchOn(){

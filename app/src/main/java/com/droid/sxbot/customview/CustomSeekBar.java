@@ -62,7 +62,7 @@ public class CustomSeekBar extends View {
     private Path trianglePath;
 
     //这个进度为[0,100]，但实际显示时要转换为minValue到maxValue之间的数值
-    private int progress = 50;
+    private float progress = 50;
 
     //当前滑块的x和y坐标
     private float posX,posY;
@@ -81,13 +81,13 @@ public class CustomSeekBar extends View {
          * 当拖动进度发生变化时触发
          * @param value ：取值[minValue,maxValue]
          */
-        void onProgressChanged(int value);
+        void onProgressChanged(float value);
 
         /**
          * 当滑块拖动完毕时触发
          * @param value：取值[minValue,maxValue]
          */
-        void onProgressChangeCompleted(int value);
+        void onProgressChangeCompleted(float value);
     }
 
     public CustomSeekBar(Context context){
@@ -294,13 +294,13 @@ public class CustomSeekBar extends View {
                 canvas.drawRoundRect(bubbleRectLeft, bubbleRectTop, bubbleRectRight, bubbleRectBottom,
                         bubbleWidth/8,bubbleHeight/6,bubblePaint);
 
-                String tip = String.valueOf(progressToRealValue(progress));
+                String tip = String.valueOf(Math.round(progressToRealValue(progress)));
                 bubbleTextPaint.getTextBounds(tip, 0, tip.length(), bubbleTextBounds);
                 canvas.drawText(tip, triangleStartX - bubbleTextBounds.width() / 2, bubbleRectBottom - bubbleHeight / 4, bubbleTextPaint);
             } else {
                 if (progress > 10 && progress < 90) {
                     valueTextPaint.setColor(indicatorColor);
-                    String currentValue = String.valueOf(progressToRealValue(progress));
+                    String currentValue = String.valueOf(Math.round(progressToRealValue(progress)));
                     valueTextPaint.getTextBounds(currentValue, 0, currentValue.length(), currentTextBounds);
                     canvas.drawText(currentValue, posX - currentTextBounds.width() / 2,
                             posY + bigIndicatorRadius + currentTextBounds.height() * 1.5F, valueTextPaint);
@@ -483,9 +483,9 @@ public class CustomSeekBar extends View {
      * 滑块的动画效果
      * @param destProgress
      */
-    private void animateTo(int destProgress) {
-        int currentProgress = progress;
-        ValueAnimator animator = ValueAnimator.ofInt(currentProgress, destProgress);
+    private void animateTo(float destProgress) {
+        int currentProgress = (int) progress;
+        ValueAnimator animator = ValueAnimator.ofInt(currentProgress, (int)destProgress);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -505,11 +505,11 @@ public class CustomSeekBar extends View {
     }
 
 
-    public void setValue(int value) {
+    public void setValue(float value) {
         setProgress(realValueToProgress(value));
     }
 
-    public void setProgress(int p) {
+    public void setProgress(float p) {
         //[犯错记录]：这里曾经把p当做实际值来用，这是错误的
         //这里的p是指[0,100]的数字，也就是进度条上的百分比刻度
         if (p < 0) {
@@ -523,7 +523,7 @@ public class CustomSeekBar extends View {
 
     }
 
-    public int getRealValue() {
+    public float getRealValue() {
         return progressToRealValue(progress);
     }
 
@@ -532,24 +532,24 @@ public class CustomSeekBar extends View {
      * @param progress 表示滑动条的百分比
      * @return 实际代表的含义数值，在minValue到maxValue之间
      */
-    private int progressToRealValue(int progress) {
+    private float progressToRealValue(float progress) {
         int gap = maxValue - minValue;
 
         if (isHorizontal) {
-            return  (gap * progress / 100) + minValue;
+            return gap * progress / 100f + minValue;
         }
 //        Log.i("test", "progress:" + progress);
 //        Log.i("test", "realValue:" + (maxValue - Math.round(gap * progress / 100)));
-        return maxValue - gap * progress / 100;
+        return maxValue - gap * progress / 100f;
     }
 
-    private int realValueToProgress(int realValue) {
+    private float realValueToProgress(float realValue) {
         int gap = maxValue - minValue;
         int result;
         if (isHorizontal) {
-            result = (realValue - minValue) * 100 / gap;
+            result = (int) Math.ceil((realValue - minValue) * 100 / gap);
         } else {
-            result = (maxValue - realValue ) *100/ gap;
+            result = (int) Math.ceil((maxValue - realValue ) *100/ gap);
         }
 
         return result;

@@ -36,6 +36,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.droid.sxbot.App;
 import com.droid.sxbot.Config;
 import com.droid.sxbot.Constant;
 import com.droid.sxbot.R;
@@ -127,6 +128,13 @@ public class ControlFragment extends Fragment implements ControlContract.View {
         title = (TextView) v.findViewById(R.id.tv_title);
         relativeLayout = (RelativeLayout) v.findViewById(R.id.view_parent);
 
+        if (savedInstanceState != null) {
+            isPlaying = savedInstanceState.getBoolean("isPlaying", false);
+            rtmpAddress = savedInstanceState.getString("video_address");
+            App app = (App) getActivity().getApplication();
+            presenter = new ControlPresenter(getContext(), this);
+            presenter.setServiceProxy(app.getRosServiceProxy());
+        }
         initView();
         return v;
 
@@ -166,15 +174,11 @@ public class ControlFragment extends Fragment implements ControlContract.View {
 
         log(metrics.toString());
 
-//        log("size:" + params2.width + "x" + params2.height);
-//        log("size:" + params3.width + "x" + params3.height);
-
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
     }
 
     @Override
@@ -185,6 +189,10 @@ public class ControlFragment extends Fragment implements ControlContract.View {
             rockerView.setAvailable(true);
         } else {
             rockerView.setAvailable(false);
+        }
+        if (isPlaying) {
+            showLoading();
+            play(rtmpAddress);
         }
         initOnClickListeners();
     }
@@ -337,6 +345,14 @@ public class ControlFragment extends Fragment implements ControlContract.View {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("isPlaying", isPlaying);
+        outState.putString("video_address", rtmpAddress);
+        super.onSaveInstanceState(outState);
+
+    }
+
     private void play(String rtmpAddress) {
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
@@ -478,7 +494,8 @@ public class ControlFragment extends Fragment implements ControlContract.View {
         infoText.setText(R.string.text_retry);
         handler.removeMessages(MSG_FLAG_LOADING);
         btPlayState.setBackgroundResource(R.drawable.ic_play);
-        Toast.makeText(getContext(), R.string.load_fail_check_config, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(), R.string.load_fail_check_config, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "请检查网络或服务器配置", Toast.LENGTH_SHORT).show();
     }
 
     @Override
