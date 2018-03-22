@@ -1,6 +1,7 @@
 package com.droid.sxbot.mvp.map;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -12,7 +13,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -41,7 +41,6 @@ public class Loader implements ApplicationListener {
     private ModelInstance instanceXbot,instanceMuseum;
     //使用ModelBatch来渲染图像
     private ModelBatch modelBatch;
-    private SpriteBatch spriteBatch;
     private Environment environment;
     private CameraController controller;
     private AssetManager assets;
@@ -56,8 +55,13 @@ public class Loader implements ApplicationListener {
     private Context context;
     private Texture btTexture;
     private Button btBack;
-    private final int buttonStartX= 50;
+    //返回按钮的左上角坐标
+    private final int buttonStartX = 50;
     private final int buttonStartY = 50;
+    //表示机器人位置
+    float x,z;
+    private final float maxX = 50.0f;
+    private final float maxY = 50.0f;
     float i =0;
 
     public Loader(Context context) {
@@ -67,7 +71,6 @@ public class Loader implements ApplicationListener {
     @Override
     public void create() {
         modelBatch = new ModelBatch();
-        spriteBatch = new SpriteBatch();
         environment = new Environment();
         stringBuilder = new StringBuilder();
         stage = new Stage(){
@@ -149,8 +152,8 @@ public class Loader implements ApplicationListener {
         minVector = new Vector3();
         boundingBox.getMax(maxVector);
         boundingBox.getMin(minVector);
-//        Log.i("tag", "maxVector:"+maxVector.toString());
-//        Log.i("tag", "maxVector:"+minVector.toString());
+        Log.i("tag", "maxVector:"+maxVector.toString());
+        Log.i("tag", "minVector:"+minVector.toString());
 
     }
 
@@ -164,25 +167,26 @@ public class Loader implements ApplicationListener {
         if (loading && assets.update()) {
             doneLoading();
         }
-//        Log.i("tag", "rendering..");
         controller.update();
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);
-//        spriteBatch.begin();
 
         modelBatch.render(instances, environment);
-        if (instances.size > 1 && i<=maxVector.x*0.8f) {
+
+//        if (instances.size > 1 && i<=maxVector.z) {
+//            if (instances.size > 1 && i<=maxVector.x*0.8f) {
 //            Vector3 pos = new Vector3();
 //            instances.get(1).transform.getTranslation(pos);
 //            Log.i("tag",pos.toString());
-            instances.get(1).transform.setToTranslation(i, 0f, 0f);
-            i+=0.01;
-        }
-//        spriteBatch.draw(btTexture, 100, 1900);
+//            instances.get(1).transform.setToTranslation(i, 0f, 0f);
+//            instances.get(1).transform.setToTranslation(0f, 0f, i);
+//            i+=0.01;
+//        }
+        instances.get(1).transform.setToTranslation(x, 0, z);
+
         modelBatch.end();
-//        spriteBatch.end();
 
         stringBuilder.setLength(0);
         stringBuilder.append("FPS: ").append(Gdx.graphics.getFramesPerSecond());
@@ -194,8 +198,15 @@ public class Loader implements ApplicationListener {
         stage.draw();
     }
 
-    public void updateRobotPosition(float x, float y) {
-        //todo:进行具体的实现
+    //因为在手机中是以x-z平面显示博物馆底部的
+    public synchronized void updateRobotPosition(float toX, float toZ,float theta) {
+        float percentX = toX / maxX;
+        //在xz平面更新位置
+        float percentZ = toZ / maxY;
+
+        //计算相对位置
+        x = (maxVector.x - minVector.x) * (percentX-0.5f);
+        z = minVector.z + (maxVector.z - minVector.z) * percentZ;
     }
 
     @Override

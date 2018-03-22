@@ -15,6 +15,9 @@ public class Constant {
     //订阅:Xbot状态的topic
     public static final String SUBSCRIBE_TOPIC_ROBOT_STATE = "/mobile_base/xbot/state";
 
+    //订阅：包含Xbot的位置和朝向信息的topic
+    public static final String SUBSCRIBE_TOPIC_ROBOT_POSE = "/app/xbot_pose";
+
     //发布：用于控制Xbot移动的topic
     public static final String PUBLISH_TOPIC_CMD_MOVE = "/cmd_vel_mux/input/teleop";
 

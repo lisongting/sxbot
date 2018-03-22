@@ -7,8 +7,11 @@ import android.widget.Toast;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.droid.sxbot.App;
+import com.droid.sxbot.Constant;
 import com.droid.sxbot.RosConnectionService;
-import com.jilk.ros.PublishEvent;
+import com.droid.sxbot.entity.RobotPosition;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * 使用libGdx加载三维模型文件
@@ -17,11 +20,12 @@ import com.jilk.ros.PublishEvent;
 public class ModelActivity extends AndroidApplication {
 	private Loader loader;
 	private RosConnectionService.ServiceBinder proxy;
-	private final String TOPIC_NAME = "";
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		EventBus.getDefault().register(this);
+
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		Toast.makeText(this, "模型加载中....", Toast.LENGTH_LONG).show();
 		loader = new Loader(getContext());
@@ -34,14 +38,20 @@ public class ModelActivity extends AndroidApplication {
 		super.onResume();
 		App app = (App) getApplication();
 		proxy = app.getRosServiceProxy();
-		proxy.manipulateTopic(TOPIC_NAME, true);
+		proxy.manipulateTopic(Constant.SUBSCRIBE_TOPIC_ROBOT_POSE, true);
 	}
 
 	//todo:控制机器人位置更新
-	public void onEvent(PublishEvent event) {
-
+	public void onEvent(RobotPosition robotPosition) {
+		log("robotPosition:" + robotPosition);
+		loader.updateRobotPosition(robotPosition.getX(), robotPosition.getY(), robotPosition.getTheta());
 	}
 
+	public void onDestroy(){
+		super.onDestroy();
+		proxy.manipulateTopic(Constant.SUBSCRIBE_TOPIC_ROBOT_POSE, false);
+		EventBus.getDefault().unregister(this);
+	}
 
 	private void log(String s) {
 		Log.i("tag", s);

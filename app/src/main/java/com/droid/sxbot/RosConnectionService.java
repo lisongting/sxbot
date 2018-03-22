@@ -23,6 +23,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.droid.sxbot.entity.RobotPosition;
 import com.droid.sxbot.entity.RobotState;
 import com.droid.sxbot.entity.Twist;
 import com.jilk.ros.PublishEvent;
@@ -323,6 +324,16 @@ public class RosConnectionService extends Service {
 //                    e.printStackTrace();
                 }
                 lastUpdateStateTime = currentTime;
+            }
+        }else if(topicName.equals(Constant.SUBSCRIBE_TOPIC_ROBOT_POSE)){
+            try {
+                JSONObject responseObj = new JSONObject(response);
+                float x = (float) responseObj.optDouble("x", 0);
+                float y = (float) responseObj.optDouble("y", 0);
+                float theta = (float) responseObj.optDouble("theta", 3.14);
+                EventBus.getDefault().post(new RobotPosition(x, y, theta));
+            } catch (JSONException e) {
+//                e.printStackTrace();
             }
         }
 
