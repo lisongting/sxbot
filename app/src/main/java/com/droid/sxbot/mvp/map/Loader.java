@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -58,11 +59,13 @@ public class Loader implements ApplicationListener {
     //返回按钮的左上角坐标
     private final int buttonStartX = 50;
     private final int buttonStartY = 50;
-    //表示机器人位置
-    float x,z;
+    //表示机器人位置和方向角
+    float x,z,theta;
+    //代表博物馆的长宽
     private final float maxX = 50.0f;
     private final float maxY = 50.0f;
-    float i =0;
+    private Vector3 axisY;
+
 
     public Loader(Context context) {
         this.context = context;
@@ -73,6 +76,7 @@ public class Loader implements ApplicationListener {
         modelBatch = new ModelBatch();
         environment = new Environment();
         stringBuilder = new StringBuilder();
+        axisY = new Vector3(0, 1, 0);
         stage = new Stage(){
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
@@ -152,8 +156,8 @@ public class Loader implements ApplicationListener {
         minVector = new Vector3();
         boundingBox.getMax(maxVector);
         boundingBox.getMin(minVector);
-        Log.i("tag", "maxVector:"+maxVector.toString());
-        Log.i("tag", "minVector:"+minVector.toString());
+        log( "maxVector:"+maxVector.toString());
+        log( "minVector:"+minVector.toString());
 
     }
 
@@ -175,16 +179,12 @@ public class Loader implements ApplicationListener {
 
         modelBatch.render(instances, environment);
 
-//        if (instances.size > 1 && i<=maxVector.z) {
-//            if (instances.size > 1 && i<=maxVector.x*0.8f) {
-//            Vector3 pos = new Vector3();
-//            instances.get(1).transform.getTranslation(pos);
-//            Log.i("tag",pos.toString());
-//            instances.get(1).transform.setToTranslation(i, 0f, 0f);
-//            instances.get(1).transform.setToTranslation(0f, 0f, i);
-//            i+=0.01;
-//        }
-        instances.get(1).transform.setToTranslation(x, 0, z);
+        if (instances.size >= 2) {
+            ModelInstance xbot = instances.get(1);
+            float degree = (float) ((theta-Math.PI)/Math.PI) *180f;
+            //同时设置位移和旋转角
+            xbot.transform.set(new Vector3(x, 0, z), new Quaternion(axisY, degree));
+        }
 
         modelBatch.end();
 
@@ -205,8 +205,9 @@ public class Loader implements ApplicationListener {
         float percentZ = toZ / maxY;
 
         //计算相对位置
-        x = (maxVector.x - minVector.x) * (percentX-0.5f);
+        x = (maxVector.x - minVector.x) * (0.5f-percentX);
         z = minVector.z + (maxVector.z - minVector.z) * percentZ;
+        this.theta = theta;
     }
 
     @Override
@@ -225,5 +226,9 @@ public class Loader implements ApplicationListener {
         instances.clear();
         assets.dispose();
         stage.dispose();
+    }
+
+    private void log(String s) {
+        Log.i("Loader", s);
     }
 }

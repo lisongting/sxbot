@@ -264,7 +264,7 @@ public class CameraController extends GestureDetector {
         Vector3 endP2 = camera.unproject(new Vector3(pointer2, 0));
         Vector3 initP = initP1.add(initP2).scl(0.5f);
         Vector3 endP = endP1.add(endP2).scl(0.5f);
-        Vector3 realTranslateVector = initP.sub(endP);
+        Vector3 realTranslateVector = initP.sub(endP).scl(0.5f);
 
         cameraLook.add(realTranslateVector);
         camera.translate(realTranslateVector);
