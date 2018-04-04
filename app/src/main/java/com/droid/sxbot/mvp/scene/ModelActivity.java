@@ -1,4 +1,4 @@
-package com.droid.sxbot.mvp.map;
+package com.droid.sxbot.mvp.scene;
 
 import android.os.Bundle;
 import android.util.Log;

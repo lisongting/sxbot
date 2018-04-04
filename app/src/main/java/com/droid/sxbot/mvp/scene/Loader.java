@@ -1,4 +1,4 @@
-package com.droid.sxbot.mvp.map;
+package com.droid.sxbot.mvp.scene;
 
 import android.content.Context;
 import android.util.Log;
@@ -34,6 +34,7 @@ import com.droid.sxbot.Constant;
 
 /**
  * Created by lisongting on 2018/3/5.
+ * 用来加载模型
  */
 
 public class Loader implements ApplicationListener {

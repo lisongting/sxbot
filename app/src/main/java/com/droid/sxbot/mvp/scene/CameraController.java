@@ -1,4 +1,4 @@
-package com.droid.sxbot.mvp.map;
+package com.droid.sxbot.mvp.scene;
 
 
 import android.graphics.Point;
@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by lisongting on 2018/3/9.
+ * 一个用来管理平移缩放等操作的类
  */
 
 public class CameraController extends GestureDetector {

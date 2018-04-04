@@ -24,7 +24,7 @@
         <activity android:name=".mvp.control.FullScreenVideoActivity"
             android:screenOrientation="landscape"/>
 
-        <activity android:name=".mvp.map.ModelActivity" />
+        <activity android:name=".mvp.scene.ModelActivity" />
 
         <service android:name=".RosConnectionService" />
     </application>

@@ -41,7 +41,7 @@ import android.widget.Toast;
 
 import com.droid.sxbot.mvp.control.ControlFragment;
 import com.droid.sxbot.mvp.control.ControlPresenter;
-import com.droid.sxbot.mvp.map.MapFragment;
+import com.droid.sxbot.mvp.scene.MapFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStateFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStatePresenter;
 import com.droid.sxbot.util.Util;
