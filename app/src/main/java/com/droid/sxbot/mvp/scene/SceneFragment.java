@@ -14,10 +14,10 @@ import com.droid.sxbot.R;
  * Created by lisongting on 2018/3/19.
  */
 
-public class MapFragment extends Fragment {
+public class SceneFragment extends Fragment {
 
     private Button btThreeDimensionScene;
-    public MapFragment(){
+    public SceneFragment(){
 
     }
 

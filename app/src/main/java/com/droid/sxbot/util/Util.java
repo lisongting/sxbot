@@ -110,7 +110,7 @@ public class Util {
         return displayMetrics.heightPixels > 2000;
     }
 
-    public static boolean isPotrait(Context context) {
+    public static boolean isPortrait(Context context) {
         return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     }
 

@@ -1,24 +1,30 @@
 package com.droid.sxbot.entity;
 
 /**
- * Created by lisongting on 2018/3/22.
- * 用来描述Xbot在地图中的位置信息
+ * Created by lisongting on 2018/4/6.
  */
 
-public class RobotPosition {
-    //在实际平面地图中的x坐标
+public class Indicator {
+    //在MapView中的x坐标
     private float x;
-    //在实际平面地图中的y坐标
+    //在MapView中的y坐标
     private float y;
-    //朝向，(弧度表示)
+    //朝向
     private float theta;
+    //对应的音频文件
+    private String file;
 
-    public RobotPosition(){}
+    public Indicator(){}
 
-    public RobotPosition(float x, float y, float theta) {
+    public Indicator(float x, float y) {
         this.x = x;
         this.y = y;
-        this.theta = theta;
+        this.theta = 0F;
+    }
+    public Indicator(float x, float y, float radius) {
+        this.x = x;
+        this.y = y;
+        this.theta = radius;
     }
 
     public float getX() {
@@ -45,12 +51,21 @@ public class RobotPosition {
         this.theta = theta;
     }
 
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
     @Override
     public String toString() {
-        return "RobotPosition{" +
+        return "Indicator{" +
                 "x=" + x +
                 ", y=" + y +
                 ", theta=" + theta +
+                ", file='" + file + '\'' +
                 '}';
     }
 }

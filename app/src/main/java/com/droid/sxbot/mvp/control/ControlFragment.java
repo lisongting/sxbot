@@ -151,7 +151,7 @@ public class ControlFragment extends Fragment implements ControlContract.View {
         RelativeLayout.LayoutParams params3 = (RelativeLayout.LayoutParams) bottomBar.getLayoutParams();
 
         //根据横屏还是竖屏进行控件大小自适应
-        if (Util.isPotrait(getContext())) {
+        if (Util.isPortrait(getContext())) {
             params1.width = metrics.widthPixels;
             params1.height = (int) (metrics.widthPixels / scale);
 
