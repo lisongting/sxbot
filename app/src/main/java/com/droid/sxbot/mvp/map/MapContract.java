@@ -15,7 +15,7 @@ public interface MapContract {
     //文件上传的监听器
     interface uploadListener{
         void onComplete();
-        void onError();
+        void onError(String s);
     }
 
     interface Presenter extends BasePresenter{

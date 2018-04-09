@@ -3,8 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-
-
     <LinearLayout
         android:id="@+id/ll_bottom_line"
         android:layout_width="match_parent"
@@ -17,7 +15,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="已选列表"
-            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textSize="16sp"
             />
 
         <ImageView
@@ -27,34 +26,62 @@
             android:src="@drawable/ic_arrow_up"
             />
     </LinearLayout>
+    <View
+        android:id="@+id/view_divider"
+        android:layout_below="@id/ll_bottom_line"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@android:color/white"
+        />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_below="@id/ll_bottom_line"
+        android:layout_below="@id/view_divider"
+        android:background="@color/colorPrimary"
         />
 
 
    <RelativeLayout
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
-       android:layout_below="@id/recycler_view">
+       android:layout_below="@id/recycler_view"
+       android:background="@color/colorPrimary"
+       >
        <Button
-           android:id="@+id/bt_cancel"
+           android:id="@+id/bt_clear"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_toLeftOf="@id/bt_sort"
+           android:text="清空"
+           android:layout_marginRight="5dp"
+           android:layout_marginBottom="2dp"
+           android:layout_marginTop="2dp"
+           android:background="@drawable/bt_selector"
+           />
+       <Button
+           android:id="@+id/bt_sort"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
            android:layout_toLeftOf="@id/bt_send"
+           android:text="排序"
+           android:layout_marginRight="5dp"
+           android:layout_marginBottom="2dp"
+           android:layout_marginTop="2dp"
            android:background="@drawable/bt_selector"
-           android:text="取消"
            />
        <Button
            android:id="@+id/bt_send"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
            android:layout_alignParentEnd="true"
+           android:textAllCaps="false"
+           android:text="发送至Xbot"
+           android:layout_marginRight="5dp"
+           android:layout_marginBottom="2dp"
+           android:layout_marginTop="2dp"
            android:background="@drawable/bt_selector"
-           android:text="发送"
            />
    </RelativeLayout>
 

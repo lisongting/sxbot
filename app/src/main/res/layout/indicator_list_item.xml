@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#fdfbfb"
+    android:background="@color/colorPrimary"
     >
 
     <TextView
@@ -27,7 +27,6 @@
         android:maxLines="3"
         android:layout_marginStart="10dp"
         android:gravity="center"
-        android:text="storage/emulated/0/folder/x.mp3"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         app:layout_constraintLeft_toRightOf="@id/tv_item_number"
@@ -44,6 +43,9 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
-
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/iv_item_drag_icon"/>
 </android.support.constraint.ConstraintLayout>

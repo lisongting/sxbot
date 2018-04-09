@@ -294,7 +294,7 @@ public class RosConnectionService extends Service {
         if (event.msg.length() < 500) {
             Log.v(TAG, "onEvent:" + event.msg);
         } else {
-            Log.v(TAG,"got base64 map string");
+            Log.v(TAG,"got base64 map_pic string");
         }
         String response = event.msg;
         if (topicName.equals(Constant.SUBSCRIBE_TOPIC_MAP)) {

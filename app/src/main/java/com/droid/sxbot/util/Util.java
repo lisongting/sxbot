@@ -8,6 +8,8 @@ import android.util.Size;
 import android.view.Display;
 import android.view.WindowManager;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,6 +123,18 @@ public class Util {
         display.getMetrics(metrics);
 
         return metrics;
+    }
+
+    public static void close(Closeable... closeList) {
+        for(Closeable c:closeList) {
+            if(c!=null) {
+                try {
+                    c.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }

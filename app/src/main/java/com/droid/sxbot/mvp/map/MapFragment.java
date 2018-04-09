@@ -4,11 +4,9 @@ import android.Manifest;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -19,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -37,7 +36,7 @@ import java.util.List;
  * Created by lisongting on 2018/4/6.
  */
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements MapContract.View{
 
     private MapView mapView;
     private RelativeLayout bottom;
@@ -52,6 +51,8 @@ public class MapFragment extends Fragment {
     private String selectedFileName = "";
     private boolean isShowingList = false;
     private int currentSelectPos = -1;
+    private Button btSend;
+    private MapContract.Presenter presenter;
 
     public MapFragment(){
         indicatorList = new ArrayList<>();
@@ -64,6 +65,7 @@ public class MapFragment extends Fragment {
         mapView = view.findViewById(R.id.map_view);
         parentView = view.findViewById(R.id.parent_view);
         bottom = (RelativeLayout) inflater.inflate(R.layout.bottom_popup_layout,null);
+        btSend = bottom.findViewById(R.id.bt_send);
         recyclerView = bottom.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -82,10 +84,6 @@ public class MapFragment extends Fragment {
             @Override
             public void onClick(View view, int pos) {
                 selectFile(pos);
-//                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//                intent.addCategory(Intent.CATEGORY_OPENABLE);
-//                intent.setType("audio/*");
-//                startActivityForResult(Intent.createChooser(intent, "请选择一个音频文件"),pos);
             }
         });
         recyclerView.setAdapter(adapter);
@@ -117,6 +115,43 @@ public class MapFragment extends Fragment {
             }
         });
 
+        btSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<String> fileList = new ArrayList<>();
+                for (Indicator indicator : indicatorList) {
+                    if (indicator.getFile().length() > 0) {
+                        fileList.add(indicator.getFile());
+                    }
+                }
+                if (presenter != null) {
+                    presenter.uploadFiles(fileList, new MapContract.uploadListener() {
+                        @Override
+                        public void onComplete() {
+                            btSend.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), "上传完成", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(final String s) {
+                            btSend.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(), "上传失败:"+s, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    Toast.makeText(getContext(), "presenter is null", Toast.LENGTH_SHORT).show();
+                    log("presenter is null");
+                }
+            }
+        });
         return view;
     }
 
@@ -189,8 +224,6 @@ public class MapFragment extends Fragment {
         int i = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (i == PackageManager.PERMISSION_DENIED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-
-
         } else {
             new LFilePicker()
                     .withSupportFragment(MapFragment.this)
@@ -202,22 +235,6 @@ public class MapFragment extends Fragment {
                     .start();
         } 
 
-    }
-
-    private String getRealPathFromUri(Uri uri) {
-        String res ;
-        String[] proj = {MediaStore.Audio.AudioColumns.DATA};
-        Cursor cursor = getContext().getContentResolver().query(uri, proj, null, null, null);
-        if (cursor == null) {
-            res = "";
-        } else {
-            cursor.moveToFirst();
-            int index = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DATA);
-            res = cursor.getString(index);
-            cursor.close();
-        }
-
-        return res;
     }
 
     @Override
@@ -253,20 +270,6 @@ public class MapFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
-//            Uri uri = data.getData();
-//            if ("file".equals(uri.getScheme())) {
-//                selectedFileName = uri.getPath();
-//            } else {
-//                selectedFileName = getRealPathFromUri(uri);
-//            }
-//            indicatorList.get(requestCode).setFile(selectedFileName);
-//            adapter.setData(indicatorList);
-//            //recyclerView.setAdapter(adapter);
-//            log("文件URI：" + uri.getPath());
-//            log("scheme:" + uri.getScheme());
-//            log("lastPathSegment:" + uri.getLastPathSegment());
-////            log("")
-//            log("文件绝对路径：" + getRealPathFromUri(uri));
             List<String> list = data.getStringArrayListExtra("paths");
             log("selected:"+list.get(0));
             selectedFileName = list.get(0);
@@ -275,5 +278,25 @@ public class MapFragment extends Fragment {
         } else {
             selectedFileName = "";
         }
+    }
+
+    @Override
+    public void showUploadSuccess() {
+
+    }
+
+    @Override
+    public void showUploadError() {
+
+    }
+
+    @Override
+    public void initView() {
+
+    }
+
+    @Override
+    public void setPresenter(MapContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 }

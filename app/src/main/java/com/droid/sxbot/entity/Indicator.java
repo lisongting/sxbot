@@ -52,7 +52,8 @@ public class Indicator {
     }
 
     public String getFile() {
-        return file;
+
+        return file == null ? "" : file;
     }
 
     public void setFile(String file) {

@@ -10,15 +10,21 @@ import com.droid.sxbot.R;
  */
 
 public class MapActivity extends AppCompatActivity {
-
+    MapFragment fragment;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.container_layout);
-        MapFragment fragment = new MapFragment();
+        fragment= new MapFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.container, fragment)
                 .commit();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MapPresenter presenter = new MapPresenter(fragment);
     }
 }

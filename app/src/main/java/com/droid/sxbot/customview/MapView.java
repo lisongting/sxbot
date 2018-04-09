@@ -11,12 +11,14 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.droid.sxbot.R;
 import com.droid.sxbot.entity.Indicator;
+import com.droid.sxbot.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,14 +64,14 @@ public class MapView extends View{
         path = new Path();
         textPaint = new Paint();
         textBound = new Rect();
-        p.setColor(Color.parseColor("#dde5e5e5"));
+        p.setColor(Color.parseColor("#aae0e0e0"));
         textPaint.setColor(Color.RED);
         textPaint.setStyle(Paint.Style.FILL);
         textPaint.setTextSize((float) (indicatorRadius*1.5));
         textPaint.setAntiAlias(true);
 
         indicatorPaint = new Paint();
-        indicatorPaint.setColor(Color.GREEN);
+        indicatorPaint.setColor(Color.parseColor("#c6ff00"));
         indicatorPaint.setStyle(Paint.Style.FILL);
         indicatorPaint.setAntiAlias(true);
         map = BitmapFactory.decodeResource(getResources(), R.drawable.map_pic);
@@ -81,9 +83,10 @@ public class MapView extends View{
         int width = map.getWidth();
         int height = map.getHeight();
 //        Toast.makeText(getContext(), "onMeasure:"+width+","+height, Toast.LENGTH_SHORT).show();
-//        DisplayMetrics metrics= Util.getScreenInfo(getContext());
-//        matrix.postScale(metrics.widthPixels / map.getWidth(), metrics.widthPixels / map.getHeight());
-        setMeasuredDimension(width,height);
+        DisplayMetrics metrics= Util.getScreenInfo(getContext());
+        float ratio = metrics.widthPixels / (float)width;
+        matrix.setScale(ratio, ratio);
+        setMeasuredDimension(metrics.widthPixels, (int) (height * ratio));
     }
 
     @Override

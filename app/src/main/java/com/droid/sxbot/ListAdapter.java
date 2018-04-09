@@ -41,7 +41,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         String file = fileList.get(position).getFile();
-        if (file== null) {
+        if (file.length()==0) {
             holder.tvFile.setText("点击这里选择音频文件");
         } else {
             holder.tvFile.setText(file);

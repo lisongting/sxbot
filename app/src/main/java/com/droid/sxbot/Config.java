@@ -30,6 +30,9 @@ public class Config {
     //ROS服务端的端口
     public static final String ROS_SERVER_PORT = "9090";
 
+    //文件传输服务的端口
+    public static final int FILE_TRANSFER_PORT = 9999;
+
     //控制Xbot进行移动的速度
     public static double speed = 0.3;
 

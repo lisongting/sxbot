@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".mvp.map.MapActivity"
+        <activity android:name=".MainActivity"
             android:theme="@style/TranslucentTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,9 +27,10 @@
             android:screenOrientation="landscape"/>
 
         <activity android:name=".mvp.scene.ModelActivity" />
-        <!--<activity android:name=".mvp.map.MapActivity" />-->
+        <!--<activity android:name=".map_pic.map.MapActivity" />-->
 
         <service android:name=".RosConnectionService" />
+        <activity android:name=".mvp.map.MapActivity" />
 
     </application>
 
