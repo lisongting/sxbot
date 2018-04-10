@@ -36,4 +36,7 @@ public class Config {
     //控制Xbot进行移动的速度
     public static double speed = 0.3;
 
+    //音频文件选择模式。如果为1，表示始终在选择点之后立即选择文件，如果为0，表示始终稍后选择文件
+    public static int AUDIO_FILE_SELECT_MODE = -1;
+
 }

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +24,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.droid.sxbot.AnimateDialog;
+import com.droid.sxbot.Config;
 import com.droid.sxbot.ListAdapter;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.MapView;
@@ -52,6 +55,8 @@ public class MapFragment extends Fragment implements MapContract.View{
     private boolean isShowingList = false;
     private int currentSelectPos = -1;
     private Button btSend;
+    private AnimateDialog dialog;
+    private FragmentManager fragmentManager;
     private MapContract.Presenter presenter;
 
     public MapFragment(){
@@ -74,19 +79,24 @@ public class MapFragment extends Fragment implements MapContract.View{
         bottom.setLayoutParams(params);
         parentView.addView(bottom);
         bottom.setVisibility(View.INVISIBLE);
-
         prevBottomLine = view.findViewById(R.id.ll_prev_bottom_line);
-        
         bottomLine = view.findViewById(R.id.ll_bottom_line);
         expandImg = bottom.findViewById(R.id.expand_icon);
+        recyclerView.setAdapter(adapter);
 
+
+        fragmentManager = getFragmentManager();
+        initClickEvents();
+        return view;
+    }
+
+    private void initClickEvents() {
         adapter.setOnClickListener(new ListAdapter.OnClickListener() {
             @Override
             public void onClick(View view, int pos) {
                 selectFile(pos);
             }
         });
-        recyclerView.setAdapter(adapter);
         prevBottomLine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,51 +122,116 @@ public class MapFragment extends Fragment implements MapContract.View{
                 log("get Indicator:" + indicator);
                 indicatorList.add(indicator);
                 adapter.setData(indicatorList);
+                if (Config.AUDIO_FILE_SELECT_MODE == -1) {
+                    if (dialog != null) {
+                        fragmentManager.beginTransaction().remove(dialog).commit();
+                    }
+                    dialog = new AnimateDialog();
+                    dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SELECT_FILE,
+                            "",true,new AnimateDialog.OnButtonClickListener() {
+                                @Override
+                                public void onCancel() {}
+                                @Override
+                                public void onConfirm() {
+                                    if (Config.AUDIO_FILE_SELECT_MODE == AnimateDialog.FILE_SELECT_MODE_ALWAYS) {
+                                        //如果为始终选择文件，则打开文件管理器选择音频
+                                        selectFile(indicatorList.size()-1);
+                                    }
+                                }
+                            });
+                    dialog.show(fragmentManager, "dialog");
+                } if (Config.AUDIO_FILE_SELECT_MODE == AnimateDialog.FILE_SELECT_MODE_ALWAYS) {
+                    //如果为始终选择文件，则打开文件管理器选择音频
+                    selectFile(indicatorList.size()-1);
+                }
             }
         });
 
         btSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<String> fileList = new ArrayList<>();
+                final List<String> fileList = new ArrayList<>();
+                boolean hasBlankFile = false;
                 for (Indicator indicator : indicatorList) {
-                    if (indicator.getFile().length() > 0) {
+                    if (indicator.getFile().length() == 0) {
+                        hasBlankFile = true;
+                    }else {
                         fileList.add(indicator.getFile());
                     }
                 }
-                if (presenter != null) {
-                    presenter.uploadFiles(fileList, new MapContract.uploadListener() {
-                        @Override
-                        public void onComplete() {
-                            btSend.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getContext(), "上传完成", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
 
-                        @Override
-                        public void onError(final String s) {
-                            btSend.post(new Runnable() {
+                if (fileList.size() == 0) {
+                    Toast.makeText(getContext(),"您尚未添加任何音频", Toast.LENGTH_SHORT).show();
+                }
+                if (hasBlankFile&&fileList.size()>0) {
+                    if (dialog != null) {
+                        fragmentManager.beginTransaction().remove(dialog).commit();
+                    }
+                    dialog = new AnimateDialog();
+                    dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                            "还有一些位置点没有设置音频,是否确认发送？", true,
+                            new AnimateDialog.OnButtonClickListener() {
                                 @Override
-                                public void run() {
-                                    Toast.makeText(getContext(), "上传失败:"+s, Toast.LENGTH_LONG).show();
+                                public void onCancel() {}
+                                @Override
+                                public void onConfirm() {
+                                    sendFiles(fileList);
                                 }
                             });
-                        }
-                    });
-                } else {
-                    Toast.makeText(getContext(), "presenter is null", Toast.LENGTH_SHORT).show();
-                    log("presenter is null");
+                    dialog.show(fragmentManager, "dialog");
                 }
+                sendFiles(fileList);
             }
         });
-        return view;
     }
 
-    private void log(String s) {
-        Log.i("MapFragment", s);
+    private void sendFiles(List<String> fileList) {
+        if (presenter != null&&fileList.size()>0) {
+            if (dialog != null) {
+                fragmentManager.beginTransaction().remove(dialog).commit();
+            }
+            dialog = new AnimateDialog();
+            dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_LOADING,"",false,null);
+            dialog.show(fragmentManager, "dialog");
+
+            presenter.uploadFiles(fileList, new MapContract.uploadListener() {
+                @Override
+                public void onComplete() {
+                    btSend.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (dialog != null) {
+                                fragmentManager.beginTransaction().remove(dialog).commit();
+                            }
+                            dialog = new AnimateDialog();
+                            dialog.setModeAndContent(
+                                    AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,"上传成功", false, null);
+                            dialog.show(fragmentManager, "dialog");
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(final String s) {
+                    btSend.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (dialog != null) {
+                                fragmentManager.beginTransaction().remove(dialog).commit();
+                            }
+                            dialog = new AnimateDialog();
+                            dialog.setModeAndContent(
+                                    AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,"发送失败，请检查网络和服务端配置", false, null);
+                            dialog.show(fragmentManager, "dialog");
+                        }
+                    });
+                }
+            });
+        } else {
+//                    Toast.makeText(getContext(), "presenter is null", Toast.LENGTH_SHORT).show();
+            log("presenter is null");
+        }
     }
 
     @Override
@@ -298,5 +373,9 @@ public class MapFragment extends Fragment implements MapContract.View{
     @Override
     public void setPresenter(MapContract.Presenter presenter) {
         this.presenter = presenter;
+    }
+
+    private void log(String s) {
+        Log.i("MapFragment", s);
     }
 }

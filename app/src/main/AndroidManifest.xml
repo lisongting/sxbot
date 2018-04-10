@@ -27,8 +27,6 @@
             android:screenOrientation="landscape"/>
 
         <activity android:name=".mvp.scene.ModelActivity" />
-        <!--<activity android:name=".map_pic.map.MapActivity" />-->
-
         <service android:name=".RosConnectionService" />
         <activity android:name=".mvp.map.MapActivity" />
 

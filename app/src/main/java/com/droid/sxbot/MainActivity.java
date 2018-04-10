@@ -159,7 +159,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         Config.ROS_SERVER_IP = sp.getString(getResources().getString(R.string.pref_key_ros_server_ip), "192.168.0.135");
         Config.speed = sp.getInt(getResources().getString(R.string.pref_key_speed), 30) / 100.0;
-        log("初始设置：" + Config.ROS_SERVER_IP + " ," + Config.speed);
+        Config.AUDIO_FILE_SELECT_MODE = sp.getInt(getResources().getString(R.string.pref_key_file_set_mode), -1);
+        log("初始设置：" + Config.ROS_SERVER_IP + " ," + Config.speed + "文件选择模式:" + Config.AUDIO_FILE_SELECT_MODE);
     }
 
     @Override
