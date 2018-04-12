@@ -5,11 +5,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.droid.sxbot.entity.Indicator;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -18,10 +18,10 @@ import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
-    private List<Indicator> fileList;
+    private List<Indicator> dataList;
     private LayoutInflater inflater;
-
     ListAdapter.OnClickListener onClickListener;
+
     public interface OnClickListener{
         void onClick(View view,int pos);
     }
@@ -40,11 +40,12 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        String file = fileList.get(position).getFile();
+        String file = dataList.get(position).getFile();
         if (file.length()==0) {
             holder.tvFile.setText("点击这里选择音频文件");
         } else {
-            holder.tvFile.setText(file);
+            int lastSeparator = file.lastIndexOf(File.separatorChar);
+            holder.tvFile.setText(file.subSequence(lastSeparator+1,file.length()));
         }
         holder.tvFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,28 +55,27 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                 }
             }
         });
-        holder.tvNumber.setText(String.valueOf(position + 1));
+
+        holder.tvNumber.setText(String.valueOf(dataList.get(position).getNumber()));
     }
 
     @Override
     public int getItemCount() {
-        return fileList==null?0:fileList.size();
+        return dataList==null?0:dataList.size();
     }
 
     public void setData(List<Indicator> list) {
-        this.fileList = list;
+        this.dataList = list;
         notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         private TextView tvNumber,tvFile;
-        private ImageView ivDrag;
 
         public ViewHolder(View itemView) {
             super(itemView);
             tvNumber = itemView.findViewById(R.id.tv_item_number);
             tvFile = itemView.findViewById(R.id.tv_item_file);
-            ivDrag = itemView.findViewById(R.id.iv_item_drag_icon);
         }
     }
 

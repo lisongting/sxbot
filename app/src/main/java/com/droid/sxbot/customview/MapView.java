@@ -38,7 +38,7 @@ public class MapView extends View{
     private Rect textBound;
 
     private List<Indicator> indicators;
-    private int indicatorCount;
+    private int indicatorCount = 0;
     //表示当前是否还在
     private boolean isTouching;
     private float touchX,touchY;
@@ -155,8 +155,8 @@ public class MapView extends View{
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 isTouching = true;
-                Indicator indicator = new Indicator(event.getX(), event.getY(), 0);
                 indicatorCount++;
+                Indicator indicator = new Indicator(indicatorCount,event.getX(), event.getY(), 0);
                 indicators.add(indicator);
                 invalidate();
                 break;
@@ -180,6 +180,29 @@ public class MapView extends View{
         return true;
     }
 
+    //移除某个编号对应的点，移除后，该点序号后面的点序号减一
+    public void removePoint(int pointNumber) {
+        int size = indicators.size();
+        int badIndex = 0;
+        for(int i=0;i<size;i++) {
+            Indicator current = indicators.get(i);
+            if (current.getNumber() == pointNumber) {
+                badIndex = i;
+            } else if (current.getNumber() > pointNumber) {
+                current.setNumber(current.getNumber() - 1);
+            }
+        }
+        indicators.remove(badIndex);
+        indicatorCount--;
+        invalidate();
+    }
+
+    //清空所有的点
+    public void clearAll() {
+        indicators.removeAll(indicators);
+        indicatorCount = 0;
+        invalidate();
+    }
     public void setIndicatorListener(OnCreateIndicatorListener listener) {
         this.listener = listener;
     }

@@ -42,7 +42,6 @@
         android:background="@color/colorPrimary"
         />
 
-
    <RelativeLayout
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
@@ -53,24 +52,14 @@
            android:id="@+id/bt_clear"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
-           android:layout_toLeftOf="@id/bt_sort"
+           android:layout_toLeftOf="@id/bt_send"
            android:text="清空"
            android:layout_marginRight="5dp"
            android:layout_marginBottom="2dp"
            android:layout_marginTop="2dp"
            android:background="@drawable/bt_selector"
            />
-       <Button
-           android:id="@+id/bt_sort"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_toLeftOf="@id/bt_send"
-           android:text="排序"
-           android:layout_marginRight="5dp"
-           android:layout_marginBottom="2dp"
-           android:layout_marginTop="2dp"
-           android:background="@drawable/bt_selector"
-           />
+
        <Button
            android:id="@+id/bt_send"
            android:layout_width="wrap_content"

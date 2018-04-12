@@ -4,7 +4,9 @@ import com.droid.sxbot.Config;
 import com.droid.sxbot.UpLoadTask;
 import com.droid.sxbot.entity.RobotPosition;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,7 +39,11 @@ public class MapPresenter implements MapContract.Presenter {
     @Override
     public void uploadFiles(final List<String> audioList, final MapContract.uploadListener listener) {
         this.listener = listener;
-        for (String s : audioList) {
+        //去除重复元素
+        Set<String> set = new HashSet<>();
+        set.addAll(audioList);
+
+        for (String s : set) {
             UpLoadTask upLoadTask =
                     new UpLoadTask(Config.ROS_SERVER_IP,
                             Config.FILE_TRANSFER_PORT,s,

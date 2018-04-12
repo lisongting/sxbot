@@ -11,8 +11,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 
 import com.droid.sxbot.AnimateDialog;
 import com.droid.sxbot.Config;
+import com.droid.sxbot.ItemTouchHelperCallback;
 import com.droid.sxbot.ListAdapter;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.MapView;
@@ -33,6 +36,7 @@ import com.droid.sxbot.entity.Indicator;
 import com.leon.lfilepickerlibrary.LFilePicker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,22 +46,22 @@ import java.util.List;
 public class MapFragment extends Fragment implements MapContract.View{
 
     private MapView mapView;
-    private RelativeLayout bottom;
+    private RelativeLayout bottom,parentView;
     private ValueAnimator translateAnimIn,translateAnimOut;
-    private int popHeight;
-    private RelativeLayout parentView;
     private ImageView expandImg;
     private LinearLayout prevBottomLine,bottomLine;
     private List<Indicator> indicatorList;
     private ListAdapter adapter;
     private RecyclerView recyclerView;
-    private String selectedFileName = "";
-    private boolean isShowingList = false;
-    private int currentSelectPos = -1;
-    private Button btSend;
-    private AnimateDialog dialog;
+    private Button btClear,btSend;
     private FragmentManager fragmentManager;
     private MapContract.Presenter presenter;
+    private ItemTouchHelper touchHelper;
+    private AnimateDialog dialog;
+    private String selectedFileName = "";
+    private boolean isShowingList = false;
+    private int popHeight;
+    private int currentSelectPos = -1;
 
     public MapFragment(){
         indicatorList = new ArrayList<>();
@@ -66,13 +70,15 @@ public class MapFragment extends Fragment implements MapContract.View{
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         adapter = new ListAdapter(getContext());
-        View view = inflater.inflate(R.layout.map_fragment, parent,false);
+        final View view = inflater.inflate(R.layout.map_fragment, parent,false);
         mapView = view.findViewById(R.id.map_view);
         parentView = view.findViewById(R.id.parent_view);
         bottom = (RelativeLayout) inflater.inflate(R.layout.bottom_popup_layout,null);
         btSend = bottom.findViewById(R.id.bt_send);
+        btClear = bottom.findViewById(R.id.bt_clear);
         recyclerView = bottom.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -84,9 +90,31 @@ public class MapFragment extends Fragment implements MapContract.View{
         expandImg = bottom.findViewById(R.id.expand_icon);
         recyclerView.setAdapter(adapter);
 
-
         fragmentManager = getFragmentManager();
         initClickEvents();
+
+        ItemTouchHelperCallback callback = new ItemTouchHelperCallback();
+        callback.setItemTouchHelperCallbackListener(
+                new ItemTouchHelperCallback.ItemTouchHelperCallbackListener() {
+            @Override
+            public void onMove(RecyclerView.ViewHolder srcViewHolder, RecyclerView.ViewHolder destViewHolder) {
+                adapter.notifyItemMoved(srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
+                Collections.swap(indicatorList, srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder) {
+                int removePos = viewHolder.getAdapterPosition();
+                Indicator tmp = indicatorList.get(removePos);
+                mapView.removePoint(tmp.getNumber());
+                indicatorList.remove(removePos);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(recyclerView);
+
         return view;
     }
 
@@ -133,7 +161,7 @@ public class MapFragment extends Fragment implements MapContract.View{
                                 public void onCancel() {}
                                 @Override
                                 public void onConfirm() {
-                                    if (Config.AUDIO_FILE_SELECT_MODE == AnimateDialog.FILE_SELECT_MODE_ALWAYS) {
+                                    if (Config.AUDIO_FILE_SELECT_MODE != AnimateDialog.FILE_SELECT_MODE_ALWAYS_DELAY) {
                                         //如果为始终选择文件，则打开文件管理器选择音频
                                         selectFile(indicatorList.size()-1);
                                     }
@@ -153,6 +181,7 @@ public class MapFragment extends Fragment implements MapContract.View{
                 final List<String> fileList = new ArrayList<>();
                 boolean hasBlankFile = false;
                 for (Indicator indicator : indicatorList) {
+                    log(indicator.toString());
                     if (indicator.getFile().length() == 0) {
                         hasBlankFile = true;
                     }else {
@@ -162,27 +191,45 @@ public class MapFragment extends Fragment implements MapContract.View{
 
                 if (fileList.size() == 0) {
                     Toast.makeText(getContext(),"您尚未添加任何音频", Toast.LENGTH_SHORT).show();
-                }
-                if (hasBlankFile&&fileList.size()>0) {
-                    if (dialog != null) {
-                        fragmentManager.beginTransaction().remove(dialog).commit();
+                }else if(fileList.size()>0){
+                    if (hasBlankFile) {
+                        if (dialog != null) {
+                            fragmentManager.beginTransaction().remove(dialog).commit();
+                        }
+                        dialog = new AnimateDialog();
+                        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                                "还有一些位置点没有设置音频,是否确认发送？", true,
+                                new AnimateDialog.OnButtonClickListener() {
+                                    @Override
+                                    public void onCancel() {}
+                                    @Override
+                                    public void onConfirm() {
+                                        sendFiles(fileList);
+                                    }
+                                });
+                        dialog.show(fragmentManager, "dialog");
+                    } else {
+                        sendFiles(fileList);
                     }
-                    dialog = new AnimateDialog();
-                    dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
-                            "还有一些位置点没有设置音频,是否确认发送？", true,
-                            new AnimateDialog.OnButtonClickListener() {
-                                @Override
-                                public void onCancel() {}
-                                @Override
-                                public void onConfirm() {
-                                    sendFiles(fileList);
-                                }
-                            });
-                    dialog.show(fragmentManager, "dialog");
                 }
-                sendFiles(fileList);
+
             }
         });
+
+        btClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                indicatorList.removeAll(indicatorList);
+                adapter.notifyDataSetChanged();
+                mapView.clearAll();
+            }
+        });
+//        btSort.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                adapter.setDragModeEnable(true);
+//            }
+//        });
     }
 
     private void sendFiles(List<String> fileList) {

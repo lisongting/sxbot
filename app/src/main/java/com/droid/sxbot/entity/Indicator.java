@@ -5,6 +5,8 @@ package com.droid.sxbot.entity;
  */
 
 public class Indicator {
+    //序列编号
+    private int number;
     //在MapView中的x坐标
     private float x;
     //在MapView中的y坐标
@@ -21,10 +23,19 @@ public class Indicator {
         this.y = y;
         this.theta = 0F;
     }
-    public Indicator(float x, float y, float radius) {
+    public Indicator(int number,float x, float y, float radius) {
+        this.number = number;
         this.x = x;
         this.y = y;
         this.theta = radius;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public float getX() {
@@ -63,7 +74,8 @@ public class Indicator {
     @Override
     public String toString() {
         return "Indicator{" +
-                "x=" + x +
+                "number=" + number +
+                ", x=" + x +
                 ", y=" + y +
                 ", theta=" + theta +
                 ", file='" + file + '\'' +
