@@ -1,6 +1,9 @@
 package com.droid.sxbot.mvp.map;
 
-import com.droid.sxbot.entity.RobotPosition;
+import android.os.Binder;
+import android.support.annotation.NonNull;
+
+import com.droid.sxbot.entity.Indicator;
 import com.droid.sxbot.mvp.BasePresenter;
 import com.droid.sxbot.mvp.BaseView;
 
@@ -20,10 +23,11 @@ public interface MapContract {
 
     interface Presenter extends BasePresenter{
 
-        void publishPoints(List<RobotPosition> positionList);
+        void publishPoints(List<Indicator> positionList);
 
         void uploadFiles(List<String> audioList,uploadListener listener);
 
+        void setServiceProxy(@NonNull Binder binder);
     }
 
     interface View extends BaseView<Presenter>{

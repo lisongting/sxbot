@@ -1,10 +1,13 @@
 package com.droid.sxbot.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by lisongting on 2018/4/6.
  */
 
-public class Indicator {
+public class Indicator implements Parcelable{
     //序列编号
     private int number;
     //在MapView中的x坐标
@@ -28,6 +31,14 @@ public class Indicator {
         this.x = x;
         this.y = y;
         this.theta = radius;
+        file = "";
+    }
+    public Indicator(int number,float x, float y, float radius,String file) {
+        this.number = number;
+        this.x = x;
+        this.y = y;
+        this.theta = radius;
+        this.file = file;
     }
 
     public int getNumber() {
@@ -81,4 +92,31 @@ public class Indicator {
                 ", file='" + file + '\'' +
                 '}';
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(number);
+        dest.writeFloat(x);
+        dest.writeFloat(y);
+        dest.writeFloat(theta);
+        dest.writeString(file);
+    }
+
+    public static final Creator<Indicator> CREATOR = new Creator<Indicator>() {
+        @Override
+        public Indicator createFromParcel(Parcel source) {
+            return new Indicator(source.readInt(), source.readFloat(),
+                    source.readFloat(), source.readFloat(), source.readString());
+        }
+
+        @Override
+        public Indicator[] newArray(int size) {
+            return new Indicator[size];
+        }
+    };
 }

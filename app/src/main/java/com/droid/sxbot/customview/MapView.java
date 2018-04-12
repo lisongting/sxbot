@@ -21,7 +21,6 @@ import com.droid.sxbot.entity.Indicator;
 import com.droid.sxbot.util.Util;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by lisongting on 2018/4/3.
@@ -36,9 +35,8 @@ public class MapView extends View{
     private float indicatorRadius = 30;
     private Path path ;
     private Rect textBound;
-
-    private List<Indicator> indicators;
-    private int indicatorCount = 0;
+    private ArrayList<Indicator> indicators;
+    private Indicator current;
     //表示当前是否还在
     private boolean isTouching;
     private float touchX,touchY;
@@ -82,18 +80,23 @@ public class MapView extends View{
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = map.getWidth();
         int height = map.getHeight();
-//        Toast.makeText(getContext(), "onMeasure:"+width+","+height, Toast.LENGTH_SHORT).show();
         DisplayMetrics metrics= Util.getScreenInfo(getContext());
-        float ratio = metrics.widthPixels / (float)width;
-        matrix.setScale(ratio, ratio);
-        setMeasuredDimension(metrics.widthPixels, (int) (height * ratio));
+        if (Util.isPortrait(getContext())) {
+            float ratio = metrics.widthPixels / (float) width;
+            matrix.setScale(ratio, ratio);
+            setMeasuredDimension(metrics.widthPixels, (int) (height * ratio));
+        } else {
+            float ratio = metrics.heightPixels / (float) height;
+            matrix.setScale(ratio, ratio);
+            setMeasuredDimension((int)(width*ratio),metrics.heightPixels);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawBitmap(map, matrix, null);
-
+        int indicatorCount = indicators.size();
         for(int i=0;i<indicators.size();i++) {
             Indicator indicator = indicators.get(i);
             float centerX = indicator.getX();
@@ -139,7 +142,7 @@ public class MapView extends View{
             //画三角形
             canvas.drawPath(path, indicatorPaint);
             //绘制文字
-            String text = String.valueOf(i+1);
+            String text = String.valueOf(indicator.getNumber());
             textPaint.getTextBounds(text, 0, text.length(), textBound);
             canvas.drawText(text, 0, text.length(), centerX - textBound.width() / 2, centerY + textBound.height() / 2, textPaint);
         }
@@ -155,8 +158,8 @@ public class MapView extends View{
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 isTouching = true;
-                indicatorCount++;
-                Indicator indicator = new Indicator(indicatorCount,event.getX(), event.getY(), 0);
+                current = new Indicator(indicators.size() + 1, event.getX(), event.getY(), 0);
+                Indicator indicator = new Indicator(indicators.size()+1,event.getX(), event.getY(), 0);
                 indicators.add(indicator);
                 invalidate();
                 break;
@@ -170,7 +173,8 @@ public class MapView extends View{
                 touchX = 0;
                 touchY = 0;
                 if (listener != null) {
-                    listener.getIndicator(indicators.get(indicatorCount - 1));
+                    int size = indicators.size();
+                    listener.getIndicator(indicators.get(size - 1));
                 }
                 invalidate();
                 break;
@@ -181,30 +185,38 @@ public class MapView extends View{
     }
 
     //移除某个编号对应的点，移除后，该点序号后面的点序号减一
-    public void removePoint(int pointNumber) {
-        int size = indicators.size();
-        int badIndex = 0;
-        for(int i=0;i<size;i++) {
-            Indicator current = indicators.get(i);
-            if (current.getNumber() == pointNumber) {
-                badIndex = i;
-            } else if (current.getNumber() > pointNumber) {
-                current.setNumber(current.getNumber() - 1);
-            }
-        }
-        indicators.remove(badIndex);
-        indicatorCount--;
-        invalidate();
-    }
+//    public void removePoint(int pointNumber) {
+//        int size = indicators.size();
+//        int badIndex = 0;
+//        for(int i=0;i<size;i++) {
+//            Indicator current = indicators.get(i);
+//            if (current.getNumber() == pointNumber) {
+//                badIndex = i;
+//            } else if (current.getNumber() > pointNumber) {
+//                current.setNumber(current.getNumber() - 1);
+//            }
+//        }
+//        indicators.remove(badIndex);
+//        indicatorCount--;
+//        invalidate();
+//    }
 
     //清空所有的点
     public void clearAll() {
         indicators.removeAll(indicators);
-        indicatorCount = 0;
         invalidate();
     }
     public void setIndicatorListener(OnCreateIndicatorListener listener) {
         this.listener = listener;
+    }
+
+    public void setIndicatorList(ArrayList<Indicator> list) {
+        this.indicators = list;
+        invalidate();
+    }
+
+    public ArrayList<Indicator> getIndicatorList(){
+        return indicators;
     }
 
     private void log(String s) {

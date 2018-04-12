@@ -27,6 +27,8 @@ public class Constant {
     //发布：用于控制电机电源的topic
     public static final String PUBLISH_TOPIC_CMD_MACHINERY_POWER = "/mobile_base/commands/power";
 
+    //todo:发布：用于将位置点和音频信息发送给Xbot
+    public static final String PUBLISH_TOPIC_POSE_AND_AUDIO = "";
 
     //用来表示Ros服务器的连接状态:连接成功
     public static final int CONN_ROS_SERVER_SUCCESS = 0x11;

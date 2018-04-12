@@ -196,6 +196,13 @@ public class RosConnectionService extends Service {
 
         }
 
+        //直接发送构造好的Json
+        public void sendJson(String json) {
+            if (isConnected) {
+                rosBridgeClient.send(json);
+            }
+        }
+
         public void disConnect() {
             connectionTask.cancel();
             rosBridgeClient.disconnect();

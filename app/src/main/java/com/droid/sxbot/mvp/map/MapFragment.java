@@ -15,6 +15,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,12 +28,14 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.droid.sxbot.AnimateDialog;
+import com.droid.sxbot.App;
 import com.droid.sxbot.Config;
 import com.droid.sxbot.ItemTouchHelperCallback;
 import com.droid.sxbot.ListAdapter;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.MapView;
 import com.droid.sxbot.entity.Indicator;
+import com.droid.sxbot.util.Util;
 import com.leon.lfilepickerlibrary.LFilePicker;
 
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class MapFragment extends Fragment implements MapContract.View{
     private ValueAnimator translateAnimIn,translateAnimOut;
     private ImageView expandImg;
     private LinearLayout prevBottomLine,bottomLine;
-    private List<Indicator> indicatorList;
+    private ArrayList<Indicator> indicatorList;
     private ListAdapter adapter;
     private RecyclerView recyclerView;
     private Button btClear,btSend;
@@ -60,62 +63,93 @@ public class MapFragment extends Fragment implements MapContract.View{
     private AnimateDialog dialog;
     private String selectedFileName = "";
     private boolean isShowingList = false;
-    private int popHeight;
+    private int popSize;
     private int currentSelectPos = -1;
+    private boolean isRotated = false;
 
     public MapFragment(){
-        indicatorList = new ArrayList<>();
+
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+//        log("onCreateView()");
         adapter = new ListAdapter(getContext());
-        final View view = inflater.inflate(R.layout.map_fragment, parent,false);
+        indicatorList = new ArrayList<>();
+        View view;
+        RelativeLayout.LayoutParams params;
+        if (Util.isPortrait(getContext())) {
+            view = inflater.inflate(R.layout.map_fragment_portrait, parent, false);
+            bottom = (RelativeLayout) inflater.inflate(R.layout.popup_layout_portrait,null);
+            params = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        } else {
+            view = inflater.inflate(R.layout.map_fragment_landscape, parent, false);
+            bottom = (RelativeLayout) inflater.inflate(R.layout.popup_layout_landscape,null);
+            DisplayMetrics metrics = Util.getScreenInfo(getContext());
+            //设置为宽300dp
+            params = new RelativeLayout.LayoutParams(
+                    (int) (300*metrics.scaledDensity), RelativeLayout.LayoutParams.MATCH_PARENT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        }
         mapView = view.findViewById(R.id.map_view);
         parentView = view.findViewById(R.id.parent_view);
-        bottom = (RelativeLayout) inflater.inflate(R.layout.bottom_popup_layout,null);
         btSend = bottom.findViewById(R.id.bt_send);
         btClear = bottom.findViewById(R.id.bt_clear);
         recyclerView = bottom.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         bottom.setLayoutParams(params);
         parentView.addView(bottom);
-        bottom.setVisibility(View.INVISIBLE);
         prevBottomLine = view.findViewById(R.id.ll_prev_bottom_line);
         bottomLine = view.findViewById(R.id.ll_bottom_line);
         expandImg = bottom.findViewById(R.id.expand_icon);
         recyclerView.setAdapter(adapter);
-
+        bottom.setVisibility(View.INVISIBLE);
+        if (savedInstanceState != null) {
+            indicatorList = savedInstanceState.getParcelableArrayList("list");
+            isShowingList = false;
+            isRotated = true;
+            adapter.setData(indicatorList);
+        }
         fragmentManager = getFragmentManager();
+        initView();
         initClickEvents();
+        return view;
+    }
 
+
+    @Override
+    public void initView() {
         ItemTouchHelperCallback callback = new ItemTouchHelperCallback();
         callback.setItemTouchHelperCallbackListener(
                 new ItemTouchHelperCallback.ItemTouchHelperCallbackListener() {
-            @Override
-            public void onMove(RecyclerView.ViewHolder srcViewHolder, RecyclerView.ViewHolder destViewHolder) {
-                adapter.notifyItemMoved(srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
-                Collections.swap(indicatorList, srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder) {
-                int removePos = viewHolder.getAdapterPosition();
-                Indicator tmp = indicatorList.get(removePos);
-                mapView.removePoint(tmp.getNumber());
-                indicatorList.remove(removePos);
-                adapter.notifyDataSetChanged();
-            }
-        });
+                    @Override
+                    public void onMove(RecyclerView.ViewHolder srcViewHolder, RecyclerView.ViewHolder destViewHolder) {
+                        adapter.notifyItemMoved(srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
+                        Collections.swap(indicatorList, srcViewHolder.getAdapterPosition(), destViewHolder.getAdapterPosition());
+                        mapView.setIndicatorList(indicatorList);
+                    }
+                    @Override
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder) {
+                        int removePos = viewHolder.getAdapterPosition();
+                        Indicator badIndicator = indicatorList.get(removePos);
+                        int size = indicatorList.size();
+                        for(int i=0;i<size;i++) {
+                            Indicator current = indicatorList.get(i);
+                            if (current.getNumber() > badIndicator.getNumber()) {
+                                current.setNumber(current.getNumber() - 1);
+                            }
+                        }
+                        indicatorList.remove(removePos);
+                        mapView.setIndicatorList(indicatorList);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
 
         touchHelper = new ItemTouchHelper(callback);
         touchHelper.attachToRecyclerView(recyclerView);
-
-        return view;
     }
 
     private void initClickEvents() {
@@ -147,8 +181,7 @@ public class MapFragment extends Fragment implements MapContract.View{
         mapView.setIndicatorListener(new MapView.OnCreateIndicatorListener() {
             @Override
             public void getIndicator(Indicator indicator) {
-                log("get Indicator:" + indicator);
-                indicatorList.add(indicator);
+                indicatorList = mapView.getIndicatorList();
                 adapter.setData(indicatorList);
                 if (Config.AUDIO_FILE_SELECT_MODE == -1) {
                     if (dialog != null) {
@@ -181,14 +214,12 @@ public class MapFragment extends Fragment implements MapContract.View{
                 final List<String> fileList = new ArrayList<>();
                 boolean hasBlankFile = false;
                 for (Indicator indicator : indicatorList) {
-                    log(indicator.toString());
                     if (indicator.getFile().length() == 0) {
                         hasBlankFile = true;
                     }else {
                         fileList.add(indicator.getFile());
                     }
                 }
-
                 if (fileList.size() == 0) {
                     Toast.makeText(getContext(),"您尚未添加任何音频", Toast.LENGTH_SHORT).show();
                 }else if(fileList.size()>0){
@@ -224,12 +255,6 @@ public class MapFragment extends Fragment implements MapContract.View{
                 mapView.clearAll();
             }
         });
-//        btSort.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                adapter.setDragModeEnable(true);
-//            }
-//        });
     }
 
     private void sendFiles(List<String> fileList) {
@@ -254,7 +279,16 @@ public class MapFragment extends Fragment implements MapContract.View{
                             dialog.setModeAndContent(
                                     AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,"上传成功", false, null);
                             dialog.show(fragmentManager, "dialog");
-
+                            if (Config.isRosServerConnected) {
+                                //todo:
+                                App app = (App) getActivity().getApplication();
+                                if (app.getRosServiceProxy() != null) {
+                                    presenter.setServiceProxy(app.getRosServiceProxy());
+                                }
+                                presenter.publishPoints(indicatorList);
+                            } else {
+                                Toast.makeText(getContext(), "Ros服务端未连接", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
                 }
@@ -276,7 +310,6 @@ public class MapFragment extends Fragment implements MapContract.View{
                 }
             });
         } else {
-//                    Toast.makeText(getContext(), "presenter is null", Toast.LENGTH_SHORT).show();
             log("presenter is null");
         }
     }
@@ -284,59 +317,102 @@ public class MapFragment extends Fragment implements MapContract.View{
     @Override
     public void onResume() {
         super.onResume();
+        if (isRotated) {
+            mapView.setIndicatorList(indicatorList);
+        }
     }
 
     private void initAnimation() {
         if (translateAnimIn != null && translateAnimOut != null) {
             return;
         }
-        popHeight = bottom.getHeight()-expandImg.getHeight();
-        translateAnimIn = ValueAnimator.ofInt(popHeight, 0);
-        translateAnimIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int value = (int) animation.getAnimatedValue();
-                bottom.setTranslationY(value);
-            }
-        });
-        translateAnimIn.setDuration(500);
-        translateAnimIn.setInterpolator(new DecelerateInterpolator());
-
-
-        translateAnimOut = ValueAnimator.ofInt(0, popHeight);
-        translateAnimOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int value = (int) animation.getAnimatedValue();
-                bottom.setTranslationY(value);
-            }
-        });
-        translateAnimOut.setDuration(500);
-        translateAnimOut.setInterpolator(new DecelerateInterpolator());
+        //横屏模式和竖屏模式下的动画不一样
+        if (Util.isPortrait(getContext())) {
+            popSize = bottom.getHeight() - expandImg.getHeight();
+            translateAnimIn = ValueAnimator.ofInt(popSize, 0);
+            translateAnimIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    bottom.setTranslationY(value);
+                }
+            });
+            translateAnimIn.setDuration(500);
+            translateAnimIn.setInterpolator(new DecelerateInterpolator());
+            translateAnimOut = ValueAnimator.ofInt(0, popSize);
+            translateAnimOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    bottom.setTranslationY(value);
+                }
+            });
+            translateAnimOut.setDuration(500);
+            translateAnimOut.setInterpolator(new DecelerateInterpolator());
+        } else {
+            popSize = bottom.getWidth() - expandImg.getWidth();
+            translateAnimIn = ValueAnimator.ofInt(popSize, 0);
+            translateAnimIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    bottom.setTranslationX(value);
+                }
+            });
+            translateAnimIn.setDuration(500);
+            translateAnimIn.setInterpolator(new DecelerateInterpolator());
+            translateAnimOut = ValueAnimator.ofInt(0, popSize);
+            translateAnimOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    bottom.setTranslationX(value);
+                }
+            });
+            translateAnimOut.setDuration(500);
+            translateAnimOut.setInterpolator(new DecelerateInterpolator());
+        }
+       
     }
 
     private void showList(){
-        if (!isShowingList) {
+        if (!isShowingList||isRotated) {
+//            log("showList()");
             initAnimation();
             bottom.setVisibility(View.VISIBLE);
             translateAnimIn.start();
-            expandImg.setImageResource(R.drawable.ic_arrow_down);
-            Drawable d = getResources().getDrawable(R.drawable.ic_arrow_down,null);
+            Drawable d;
+            if (Util.isPortrait(getContext())) {
+                expandImg.setImageResource(R.drawable.ic_arrow_down);
+                d = getResources().getDrawable(R.drawable.ic_arrow_down,null);
+            }else {
+                expandImg.setImageResource(R.drawable.ic_arrow_right);
+                d = getResources().getDrawable(R.drawable.ic_arrow_right,null);
+            }
             d.setBounds(0, 0, d.getMinimumWidth(), d.getMinimumHeight());
             prevBottomLine.setVisibility(View.INVISIBLE);
             isShowingList = true;
+            isRotated = false;
         }
 
     }
 
     private void hideList(){
-        if (isShowingList) {
+        if (isShowingList||isRotated) {
+//            log("hideList()");
             initAnimation();
             translateAnimOut.start();
-            expandImg.setImageResource(R.drawable.ic_arrow_up);
-            Drawable d = getResources().getDrawable(R.drawable.ic_arrow_up,null);
+            Drawable d;
+            if (Util.isPortrait(getContext())) {
+                expandImg.setImageResource(R.drawable.ic_arrow_up);
+                d = getResources().getDrawable(R.drawable.ic_arrow_up, null);
+            } else {
+                expandImg.setImageResource(R.drawable.ic_arrow_left);
+                d = getResources().getDrawable(R.drawable.ic_arrow_left, null);
+            }
             d.setBounds(0, 0, d.getMinimumWidth(), d.getMinimumHeight());
             isShowingList = false;
+            isRotated = false;
         }
 
     }
@@ -355,8 +431,7 @@ public class MapFragment extends Fragment implements MapContract.View{
                     .withTitle("请选择一个音频文件")
                     .withFileFilter(new String[]{".mp3", ".wav"})
                     .start();
-        } 
-
+        }
     }
 
     @Override
@@ -403,17 +478,19 @@ public class MapFragment extends Fragment implements MapContract.View{
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("list", indicatorList);
+        outState.putBoolean("listOpen", isShowingList);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void showUploadSuccess() {
 
     }
 
     @Override
     public void showUploadError() {
-
-    }
-
-    @Override
-    public void initView() {
 
     }
 
