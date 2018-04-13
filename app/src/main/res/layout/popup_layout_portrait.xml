@@ -43,6 +43,7 @@
         />
 
    <RelativeLayout
+       android:id="@+id/rl_bt_group"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:layout_below="@id/recycler_view"

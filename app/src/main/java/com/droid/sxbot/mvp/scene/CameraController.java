@@ -25,7 +25,7 @@ public class CameraController extends GestureDetector {
     /** The button for translating the camera along the up/right plane */
     public int translateButton = Input.Buttons.RIGHT;
     /** The units to translate the camera when moved the full width or height of the screen. */
-    public float translateUnits = 10f; // FIXME auto calculate this based on the target
+    public float translateUnits = 10f;
     /** The button for translating the camera along the direction axis */
     public int forwardButton = Input.Buttons.MIDDLE;
     /** The key which must be pressed to activate rotate, translate and forward or 0 to always activate. */

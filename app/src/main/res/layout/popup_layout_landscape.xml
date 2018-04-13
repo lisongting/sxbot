@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="200dp"
+    android:layout_width="300dp"
     android:layout_height="match_parent">
     <LinearLayout
         android:id="@+id/ll_bottom_line"
@@ -26,23 +26,17 @@
             />
     </LinearLayout>
 
-    <View
-        android:id="@+id/view_divider"
-        android:layout_toEndOf="@id/ll_bottom_line"
-        android:layout_width="0.5dp"
-        android:layout_height="match_parent"
-        android:background="@android:color/white"
-        />
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toEndOf="@id/view_divider"
+        android:layout_toRightOf="@id/ll_bottom_line"
+        android:layout_above="@id/rl_bt_group"
         android:background="@color/colorPrimary"
         />
 
     <RelativeLayout
+        android:id="@+id/rl_bt_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -70,5 +64,15 @@
             android:text="发送至Xbot"
             android:textAllCaps="false" />
     </RelativeLayout>
+
+
+
+    <View
+        android:id="@+id/view_divider"
+        android:layout_toEndOf="@id/ll_bottom_line"
+        android:layout_width="0.5dp"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        />
 
 </RelativeLayout>

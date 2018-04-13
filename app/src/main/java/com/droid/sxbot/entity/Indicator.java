@@ -10,9 +10,9 @@ import android.os.Parcelable;
 public class Indicator implements Parcelable{
     //序列编号
     private int number;
-    //在MapView中的x坐标
+    //在MapView中的x坐标,比例值，描述了在横向方向的百分比位置，[0,1]之间
     private float x;
-    //在MapView中的y坐标
+    //在MapView中的y坐标,比例值，描述了在横向方向的百分比位置，[0,1]之间
     private float y;
     //朝向
     private float theta;

@@ -68,30 +68,28 @@ public class MapFragment extends Fragment implements MapContract.View{
     private boolean isRotated = false;
 
     public MapFragment(){
-
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-//        log("onCreateView()");
         adapter = new ListAdapter(getContext());
         indicatorList = new ArrayList<>();
         View view;
-        RelativeLayout.LayoutParams params;
+        RelativeLayout.LayoutParams popParams;
         if (Util.isPortrait(getContext())) {
             view = inflater.inflate(R.layout.map_fragment_portrait, parent, false);
             bottom = (RelativeLayout) inflater.inflate(R.layout.popup_layout_portrait,null);
-            params = new RelativeLayout.LayoutParams(
+            popParams = new RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            popParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         } else {
             view = inflater.inflate(R.layout.map_fragment_landscape, parent, false);
             bottom = (RelativeLayout) inflater.inflate(R.layout.popup_layout_landscape,null);
             DisplayMetrics metrics = Util.getScreenInfo(getContext());
             //设置为宽300dp
-            params = new RelativeLayout.LayoutParams(
+            popParams = new RelativeLayout.LayoutParams(
                     (int) (300*metrics.scaledDensity), RelativeLayout.LayoutParams.MATCH_PARENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            popParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         }
         mapView = view.findViewById(R.id.map_view);
         parentView = view.findViewById(R.id.parent_view);
@@ -100,20 +98,27 @@ public class MapFragment extends Fragment implements MapContract.View{
         recyclerView = bottom.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        bottom.setLayoutParams(params);
+        bottom.setLayoutParams(popParams);
         parentView.addView(bottom);
         prevBottomLine = view.findViewById(R.id.ll_prev_bottom_line);
         bottomLine = view.findViewById(R.id.ll_bottom_line);
         expandImg = bottom.findViewById(R.id.expand_icon);
         recyclerView.setAdapter(adapter);
         bottom.setVisibility(View.INVISIBLE);
+
+        fragmentManager = getFragmentManager();
         if (savedInstanceState != null) {
             indicatorList = savedInstanceState.getParcelableArrayList("list");
             isShowingList = false;
             isRotated = true;
             adapter.setData(indicatorList);
+            dialog = (AnimateDialog) fragmentManager.getFragment(savedInstanceState, "dialog");
+            if (dialog != null) {
+                fragmentManager.beginTransaction().remove(dialog).commit();
+//                dialog.show(fragmentManager, "dialog");
+//                fragmentManager.beginTransaction().show(dialog).commit();
+            }
         }
-        fragmentManager = getFragmentManager();
         initView();
         initClickEvents();
         return view;
@@ -287,7 +292,8 @@ public class MapFragment extends Fragment implements MapContract.View{
                                 }
                                 presenter.publishPoints(indicatorList);
                             } else {
-                                Toast.makeText(getContext(), "Ros服务端未连接", Toast.LENGTH_SHORT).show();
+                                log("ros服务端未连接");
+                                //Toast.makeText(getContext(), "Ros服务端未连接", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -478,9 +484,21 @@ public class MapFragment extends Fragment implements MapContract.View{
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (dialog != null) {
+//            fragmentManager.beginTransaction().remove(dialog).commit();
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelableArrayList("list", indicatorList);
         outState.putBoolean("listOpen", isShowingList);
+        if (dialog != null&&dialog.isVisible()) {
+//            fragmentManager.beginTransaction().remove(dialog).commit();
+            fragmentManager.putFragment(outState, "dialog", dialog);
+        }
         super.onSaveInstanceState(outState);
     }
 

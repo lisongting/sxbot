@@ -36,11 +36,11 @@ public class MapView extends View{
     private Path path ;
     private Rect textBound;
     private ArrayList<Indicator> indicators;
-    private Indicator current;
-    //表示当前是否还在
+    //表示当前是否手指还在屏幕上
     private boolean isTouching;
     private float touchX,touchY;
     private OnCreateIndicatorListener listener;
+    private Paint tmpPaint;
 
     public interface OnCreateIndicatorListener{
         void getIndicator(Indicator indicator);
@@ -62,6 +62,11 @@ public class MapView extends View{
         path = new Path();
         textPaint = new Paint();
         textBound = new Rect();
+        tmpPaint = new Paint();
+        tmpPaint.setColor(Color.GREEN);
+        tmpPaint.setStrokeWidth(20);
+        tmpPaint.setStyle(Paint.Style.STROKE);
+
         p.setColor(Color.parseColor("#aae0e0e0"));
         textPaint.setColor(Color.RED);
         textPaint.setStyle(Paint.Style.FILL);
@@ -86,9 +91,12 @@ public class MapView extends View{
             matrix.setScale(ratio, ratio);
             setMeasuredDimension(metrics.widthPixels, (int) (height * ratio));
         } else {
-            float ratio = metrics.heightPixels / (float) height;
+            int statusBarHeight = Util.getStatusBarHeight(getContext());
+            int actionbarSize = Util.getActionBarHeight(getContext());
+            int realHeight = (metrics.heightPixels - statusBarHeight - actionbarSize);
+            float ratio = realHeight/ (float) height;
             matrix.setScale(ratio, ratio);
-            setMeasuredDimension((int)(width*ratio),metrics.heightPixels);
+            setMeasuredDimension((int)(width*ratio),realHeight);
         }
     }
 
@@ -96,17 +104,21 @@ public class MapView extends View{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawBitmap(map, matrix, null);
+
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+
+        canvas.drawRect(0, 0, width, height, tmpPaint);
         int indicatorCount = indicators.size();
         for(int i=0;i<indicators.size();i++) {
             Indicator indicator = indicators.get(i);
-            float centerX = indicator.getX();
-            float centerY = indicator.getY();
+            float centerX = indicator.getX() * getMeasuredWidth();
+            float centerY = indicator.getY() * getMeasuredHeight();
             float theta;
             if (indicatorCount == i + 1 && isTouching) {
                 canvas.drawCircle(centerX, centerY, 3 * indicatorRadius, p);
                 float distance = (float) Math.sqrt(Math.pow(centerX - touchX, 2) +
                         Math.pow(centerY - touchY, 2));
-
                 theta = touchX > centerX ? (float) Math.asin((centerY - touchY) / distance) :
                         (float) (Math.PI - Math.acos((centerX-touchX ) / distance));
                 if (touchX < centerX && touchY > centerY) {
@@ -158,8 +170,9 @@ public class MapView extends View{
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 isTouching = true;
-                current = new Indicator(indicators.size() + 1, event.getX(), event.getY(), 0);
-                Indicator indicator = new Indicator(indicators.size()+1,event.getX(), event.getY(), 0);
+                Indicator indicator = new Indicator(indicators.size()+1,
+                        event.getX()/getMeasuredWidth(),
+                        event.getY()/getMeasuredHeight(), 0);
                 indicators.add(indicator);
                 invalidate();
                 break;
@@ -183,23 +196,6 @@ public class MapView extends View{
         }
         return true;
     }
-
-    //移除某个编号对应的点，移除后，该点序号后面的点序号减一
-//    public void removePoint(int pointNumber) {
-//        int size = indicators.size();
-//        int badIndex = 0;
-//        for(int i=0;i<size;i++) {
-//            Indicator current = indicators.get(i);
-//            if (current.getNumber() == pointNumber) {
-//                badIndex = i;
-//            } else if (current.getNumber() > pointNumber) {
-//                current.setNumber(current.getNumber() - 1);
-//            }
-//        }
-//        indicators.remove(badIndex);
-//        indicatorCount--;
-//        invalidate();
-//    }
 
     //清空所有的点
     public void clearAll() {

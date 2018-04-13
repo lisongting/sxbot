@@ -105,10 +105,15 @@ public class AnimateDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
+        setCancelable(false);
         Dialog dialog = getDialog();
         if (dialog != null) {
             DisplayMetrics metrics = Util.getScreenInfo(getContext());
-            dialog.getWindow().setLayout((int) (metrics.widthPixels * 0.75), ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (Util.isPortrait(getContext())) {
+                dialog.getWindow().setLayout((int) (metrics.widthPixels * 0.75), ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                dialog.getWindow().setLayout((int) (metrics.heightPixels * 0.75), ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
         }
         getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         switch (mode) {
