@@ -30,6 +30,9 @@ public class Constant {
     //todo:发布：用于将位置点和音频信息发送给Xbot
     public static final String PUBLISH_TOPIC_POSE_AND_AUDIO = "";
 
+    //讯飞开放平台中获得的APPID
+    public static final String APPID = "59198461";
+
     //用来表示Ros服务器的连接状态:连接成功
     public static final int CONN_ROS_SERVER_SUCCESS = 0x11;
 
