@@ -110,7 +110,6 @@ public class UpLoadTask implements Runnable{
             e1.printStackTrace();
         }
 
-
     }
 
     private static void log(String s) {

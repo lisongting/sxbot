@@ -73,7 +73,6 @@ public class AnimateDialog extends DialogFragment {
         btOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (rbAlwaysSelect.isChecked()) {
                     SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
                     editor.putInt(getString(R.string.pref_key_file_set_mode), FILE_SELECT_MODE_ALWAYS);
@@ -91,12 +90,6 @@ public class AnimateDialog extends DialogFragment {
                 }
                 dismiss();
 
-            }
-        });
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
             }
         });
         return v;
@@ -134,11 +127,11 @@ public class AnimateDialog extends DialogFragment {
                 break;
             case DIALOG_STYLE_LOADING:
                 tvBigText.setVisibility(View.INVISIBLE);
-                tvSmallText.setText("文件上传中....");
+                tvSmallText.setText("文件上传中...");
                 tvSmallText.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
-                rbAlwaysSelect.setVisibility(View.INVISIBLE);
-                rbAlwaysSelectDelay.setVisibility(View.INVISIBLE);
+                rbAlwaysSelect.setVisibility(View.GONE);
+                rbAlwaysSelectDelay.setVisibility(View.GONE);
                 btOk.setVisibility(View.VISIBLE);
                 btCancel.setVisibility(View.INVISIBLE);
                 break;
@@ -167,5 +160,12 @@ public class AnimateDialog extends DialogFragment {
         this.mode = mode;
         this.largeContentText = largeContentText;
         this.isShowingTwoButtons = isShowingTwoButtons;
+    }
+
+    //更新进度，表示当前完成的百分比
+    public void updateProgress(int percent){
+        if (isVisible() && mode == DIALOG_STYLE_LOADING) {
+            progressBar.setProgress(percent);
+        }
     }
 }

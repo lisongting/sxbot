@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -66,8 +68,10 @@ public class MapFragment extends Fragment implements MapContract.View{
     private int popSize;
     private int currentSelectPos = -1;
     private boolean isRotated = false;
+    private Handler handler;
 
     public MapFragment(){
+        handler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -124,7 +128,7 @@ public class MapFragment extends Fragment implements MapContract.View{
         return view;
     }
 
-
+    int test = 0;
     @Override
     public void initView() {
         ItemTouchHelperCallback callback = new ItemTouchHelperCallback();
@@ -273,8 +277,18 @@ public class MapFragment extends Fragment implements MapContract.View{
 
             presenter.uploadFiles(fileList, new MapContract.uploadListener() {
                 @Override
+                public void onUpdateProgress(final int percent){
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.updateProgress(percent);
+                        }
+                    });
+                }
+
+                @Override
                 public void onComplete() {
-                    btSend.post(new Runnable() {
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (dialog != null) {
@@ -301,7 +315,7 @@ public class MapFragment extends Fragment implements MapContract.View{
 
                 @Override
                 public void onError(final String s) {
-                    btSend.post(new Runnable() {
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (dialog != null) {

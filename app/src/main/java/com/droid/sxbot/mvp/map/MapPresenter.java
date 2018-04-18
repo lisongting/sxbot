@@ -2,6 +2,7 @@ package com.droid.sxbot.mvp.map;
 
 import android.os.Binder;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.droid.sxbot.Config;
 import com.droid.sxbot.Constant;
@@ -27,7 +28,8 @@ public class MapPresenter implements MapContract.Presenter {
     private MapContract.uploadListener listener;
     private ExecutorService threadPool;
     private MapContract.View view;
-    private volatile int completedCount = 0;
+    private int completedCount = 0;
+    private int totalCount = -1;
     private RosConnectionService.ServiceBinder proxy;
 
     public MapPresenter(MapContract.View view) {
@@ -38,7 +40,7 @@ public class MapPresenter implements MapContract.Presenter {
 
     @Override
     public void start() {
-        threadPool = Executors.newFixedThreadPool(20);
+        threadPool = Executors.newFixedThreadPool(10);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class MapPresenter implements MapContract.Presenter {
         //去除重复元素
         Set<String> set = new HashSet<>();
         set.addAll(audioList);
-
+        totalCount = set.size();
         for (String s : set) {
             UpLoadTask upLoadTask =
                     new UpLoadTask(Config.ROS_SERVER_IP,
@@ -87,10 +89,7 @@ public class MapPresenter implements MapContract.Presenter {
                             new UpLoadTask.OnCompleteListener() {
                 @Override
                 public void onComplete() {
-                    completedCount++;
-                    if (completedCount == audioList.size()) {
-                        listener.onComplete();
-                    }
+                    increaseCount();
                 }
                 @Override
                 public void onError(String s) {
@@ -98,13 +97,24 @@ public class MapPresenter implements MapContract.Presenter {
                 }
             });
             threadPool.execute(upLoadTask);
+        }
+    }
 
+    private synchronized void increaseCount() {
+        completedCount++;
+        listener.onUpdateProgress((int) (completedCount*100.0/totalCount));
+        if (completedCount == totalCount) {
+            listener.onComplete();
         }
 
     }
 
     public void setServiceProxy(@NonNull Binder binder){
         this.proxy = (RosConnectionService.ServiceBinder) binder;
+    }
+
+    private void log(String s) {
+        Log.i("MapPresenter", s);
     }
 
 

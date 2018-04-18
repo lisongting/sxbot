@@ -19,6 +19,7 @@ public interface MapContract {
     interface uploadListener{
         void onComplete();
         void onError(String s);
+        void onUpdateProgress(int percent);
     }
 
     interface Presenter extends BasePresenter{
