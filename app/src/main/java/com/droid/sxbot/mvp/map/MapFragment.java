@@ -37,6 +37,7 @@ import com.droid.sxbot.ListAdapter;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.MapView;
 import com.droid.sxbot.entity.Indicator;
+import com.droid.sxbot.mvp.map.tts.TTSActivity;
 import com.droid.sxbot.util.Util;
 import com.leon.lfilepickerlibrary.LFilePicker;
 
@@ -58,7 +59,7 @@ public class MapFragment extends Fragment implements MapContract.View{
     private ArrayList<Indicator> indicatorList;
     private ListAdapter adapter;
     private RecyclerView recyclerView;
-    private Button btClear,btSend;
+    private Button btClear,btSend,btMakeAudio;
     private FragmentManager fragmentManager;
     private MapContract.Presenter presenter;
     private ItemTouchHelper touchHelper;
@@ -90,13 +91,14 @@ public class MapFragment extends Fragment implements MapContract.View{
             view = inflater.inflate(R.layout.map_fragment_landscape, parent, false);
             bottom = (RelativeLayout) inflater.inflate(R.layout.popup_layout_landscape,null);
             DisplayMetrics metrics = Util.getScreenInfo(getContext());
-            //设置为宽300dp
+            //设置为宽350dp
             popParams = new RelativeLayout.LayoutParams(
-                    (int) (300*metrics.scaledDensity), RelativeLayout.LayoutParams.MATCH_PARENT);
+                    (int) (350*metrics.scaledDensity), RelativeLayout.LayoutParams.MATCH_PARENT);
             popParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         }
         mapView = view.findViewById(R.id.map_view);
         parentView = view.findViewById(R.id.parent_view);
+        btMakeAudio = bottom.findViewById(R.id.bt_make_audio);
         btSend = bottom.findViewById(R.id.bt_send);
         btClear = bottom.findViewById(R.id.bt_clear);
         recyclerView = bottom.findViewById(R.id.recycler_view);
@@ -110,6 +112,7 @@ public class MapFragment extends Fragment implements MapContract.View{
         recyclerView.setAdapter(adapter);
         bottom.setVisibility(View.INVISIBLE);
 
+
         fragmentManager = getFragmentManager();
         if (savedInstanceState != null) {
             indicatorList = savedInstanceState.getParcelableArrayList("list");
@@ -119,8 +122,6 @@ public class MapFragment extends Fragment implements MapContract.View{
             dialog = (AnimateDialog) fragmentManager.getFragment(savedInstanceState, "dialog");
             if (dialog != null) {
                 fragmentManager.beginTransaction().remove(dialog).commit();
-//                dialog.show(fragmentManager, "dialog");
-//                fragmentManager.beginTransaction().show(dialog).commit();
             }
         }
         initView();
@@ -128,7 +129,6 @@ public class MapFragment extends Fragment implements MapContract.View{
         return view;
     }
 
-    int test = 0;
     @Override
     public void initView() {
         ItemTouchHelperCallback callback = new ItemTouchHelperCallback();
@@ -162,6 +162,12 @@ public class MapFragment extends Fragment implements MapContract.View{
     }
 
     private void initClickEvents() {
+        btMakeAudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getContext(), TTSActivity.class));
+            }
+        });
         adapter.setOnClickListener(new ListAdapter.OnClickListener() {
             @Override
             public void onClick(View view, int pos) {

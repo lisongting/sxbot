@@ -12,7 +12,7 @@
         android:layout_margin="10dp"
         android:text="三维场景视图"
         android:textSize="18sp"
-        android:background="@drawable/bt_background"
+        android:background="@drawable/bt_blue_background"
         />
 
     <Button
@@ -23,7 +23,7 @@
         android:layout_margin="10dp"
         android:text="地图选点模式"
         android:textSize="18sp"
-        android:background="@drawable/bt_background"
+        android:background="@drawable/bt_blue_background"
         android:layout_below="@id/bt_three_dimension"/>
 
 </RelativeLayout>

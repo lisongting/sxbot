@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="300dp"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent">
     <LinearLayout
         android:id="@+id/ll_bottom_line"
@@ -43,6 +43,17 @@
         android:layout_alignParentBottom="true"
         android:background="@color/colorPrimary">
         <Button
+            android:id="@+id/bt_make_audio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="2dp"
+            android:layout_toLeftOf="@id/bt_clear"
+            android:background="@drawable/bt_selector"
+            android:text="合成音频" />
+
+        <Button
             android:id="@+id/bt_clear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,8 +75,6 @@
             android:text="发送至Xbot"
             android:textAllCaps="false" />
     </RelativeLayout>
-
-
 
     <View
         android:id="@+id/view_divider"

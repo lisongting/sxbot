@@ -24,7 +24,7 @@ public class SceneFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_map, parent, false);
+        View view = inflater.inflate(R.layout.scene_fragment, parent, false);
         btThreeDimensionScene = view.findViewById(R.id.bt_three_dimension);
         btMapView = view.findViewById(R.id.bt_map);
         initListeners();

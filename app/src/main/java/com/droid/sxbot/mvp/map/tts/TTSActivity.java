@@ -1,4 +1,4 @@
-package com.droid.sxbot.mvp.map;
+package com.droid.sxbot.mvp.map.tts;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -7,15 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.droid.sxbot.R;
-import com.droid.sxbot.mvp.map.tts.TTSFragment;
 
 /**
- * Created by lisongting on 2018/4/6.
+ * Created by lisongting on 2018/4/19.
  */
 
-public class MapActivity extends AppCompatActivity {
-    private MapFragment fragment;
-    private final String TAG = "MapActivity";
+public class TTSActivity extends AppCompatActivity {
+
     private FragmentManager fragmentManager;
     private TTSFragment ttsFragment;
     @Override
@@ -24,12 +22,11 @@ public class MapActivity extends AppCompatActivity {
         setContentView(R.layout.container_layout);
         fragmentManager = getSupportFragmentManager();
         if (savedInstanceState != null) {
-            fragment = (MapFragment) fragmentManager.getFragment(savedInstanceState, "mapFragment");
             ttsFragment = (TTSFragment) fragmentManager.getFragment(savedInstanceState, "ttsFragment");
         } else {
-            fragment= new MapFragment();
+            ttsFragment = new TTSFragment();
             fragmentManager.beginTransaction()
-                    .add(R.id.container, fragment,"mapFragment")
+                    .add(R.id.container, ttsFragment, "ttsFragment")
                     .commit();
         }
         ActionBar actionBar = getSupportActionBar();
@@ -39,19 +36,8 @@ public class MapActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        MapPresenter presenter = new MapPresenter(fragment);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
-        fragmentManager.putFragment(outState, "mapFragment",fragment);
+        fragmentManager.putFragment(outState, "ttsFragment", ttsFragment);
         super.onSaveInstanceState(outState);
     }
 
@@ -62,6 +48,4 @@ public class MapActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
 }

@@ -60,7 +60,7 @@ public class App extends Application {
         Intent intent = new Intent(this, RosConnectionService.class);
         bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
 
-        SpeechUtility.createUtility(this, SpeechConstant.APPID +"=12345678");
+        SpeechUtility.createUtility(this, SpeechConstant.APPID +"="+Constant.APPID);
     }
 
     public RosConnectionService.ServiceBinder getRosServiceProxy(){

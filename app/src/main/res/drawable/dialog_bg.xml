@@ -2,9 +2,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle"
     >
-    <!--<size-->
-        <!--android:width="200dp"-->
-        <!--android:height="150dp" />-->
     <corners android:radius="16dp"/>
 
     <gradient
