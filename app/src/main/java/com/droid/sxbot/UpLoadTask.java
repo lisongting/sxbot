@@ -53,10 +53,12 @@ public class UpLoadTask implements Runnable{
             }
         } catch (IOException e) {
             if (listener != null) {
-                listener.onError("IOException");
+                log("Socket IOException");
+//                listener.onError("IOException");
             }
             e.printStackTrace();
         }
+
         File fileResource = new File(file);
         String fileName = null;
         FileInputStream fis = null;
@@ -66,7 +68,11 @@ public class UpLoadTask implements Runnable{
             return;
         }
         try {
-            outputStream = serverSocket.getOutputStream();
+            if (serverSocket.isConnected()) {
+                outputStream = serverSocket.getOutputStream();
+            } else {
+                Thread.sleep(200);
+            }
             fileName = URLEncoder.encode(fileResource.getName(), "utf-8");
             String fileNameLenBinary = Integer.toBinaryString(fileName.length());
             StringBuilder sb = new StringBuilder();

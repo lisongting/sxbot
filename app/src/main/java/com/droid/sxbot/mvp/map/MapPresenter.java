@@ -104,6 +104,7 @@ public class MapPresenter implements MapContract.Presenter {
         completedCount++;
         listener.onUpdateProgress((int) (completedCount*100.0/totalCount));
         if (completedCount == totalCount) {
+            completedCount = 0;
             listener.onComplete();
         }
 
