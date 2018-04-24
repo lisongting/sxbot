@@ -34,4 +34,10 @@ public class RegexCheckUtil {
         return matcher.find();
     }
 
+    public static boolean isRightPersonName(String str) {
+        Pattern pattern = Pattern.compile("[\\u4E00-\\u9FA5]{2,5}(?:·[\\u4E00-\\u9FA5]{2,5})*");
+        Matcher matcher = pattern.matcher(str);
+        return matcher.find();
+    }
+
 }

@@ -35,7 +35,12 @@
         <activity android:name=".mvp.map.tts.TTSActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".mvp.map.MapActivity" />
-
+        <activity android:name=".mvp.user.userlist.UserListActivity"
+            android:theme="@style/TranslucentTheme"/>
+        <activity android:name=".mvp.user.register.CameraActivity"
+            android:theme="@style/TranslucentTheme"/>
+        <activity android:name=".mvp.user.recognize.RecogActivity"
+            android:theme="@style/TranslucentTheme"/>
     </application>
 
 </manifest>

@@ -30,6 +30,12 @@ public class Config {
     //ROS服务端的端口
     public static final String ROS_SERVER_PORT = "9090";
 
+    //人脸识别服务端的IP
+    public static final String RECOGNITION_SERVER_IP = "192.168.0.135";
+
+    //人脸识别服务器的端口
+    public static final String RECOGNITION_SERVER_PORT = "8000";
+
     //文件传输服务的端口
     public static final int FILE_TRANSFER_PORT = 9999;
 
