@@ -4,6 +4,9 @@
     <com.droid.sxbot.preferences.RosIpPreference
         android:key="@string/pref_key_ros_server_ip"/>
 
+    <com.droid.sxbot.preferences.YoutuIpPreference
+        android:key="@string/pref_key_recognition_server_ip"/>
+
     <com.droid.sxbot.preferences.SeekbarPreference
         android:key="@string/pref_key_speed"
         android:summary="@string/pref_speed_summary"

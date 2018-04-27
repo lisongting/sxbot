@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.preference.DialogPreference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,21 +25,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+public class YoutuIpPreference extends DialogPreference {
 
+    public static final String TAG = "YoutuIpPreference";
+    //初始值：添加10.0.0.0和192.168.8.141
+    public static final String INIT_HISTORY = "10.0.0.0_192.168.8.141";
+    public static final String KEY_YOUTU_HISTORY = "youtu_history";
+    public String KEY_YOUTU_SERVER_SP ;
 
-
-/**
- * Created by lisongting on 2017/7/19.
- */
-
-public class RosIpPreference extends DialogPreference {
-    
-    public static final String TAG = "RosIpPreference";
-    //初始值：添加10.0.0.0和192.168.8.101
-    public static final String INIT_HISTORY = "192.168.8.101_10.0.0.0";
-    public static final String KEY_ROS_HISTORY = "ros_history";
-    public String SP_KEY_ROS_SERVER ;
-    
     private TextView textViewIpType;
     private TextView textViewIp;
     private EditText dialogEditText;
@@ -54,22 +46,20 @@ public class RosIpPreference extends DialogPreference {
 
     private SharedPreferences.Editor spEdtor;
 
-    public RosIpPreference(Context context, AttributeSet attrs) {
+    public YoutuIpPreference(Context context, AttributeSet attrs) {
         super(context, attrs,0);
-        SP_KEY_ROS_SERVER = context.getResources().getString(R.string.pref_key_ros_server_ip);
+        KEY_YOUTU_SERVER_SP = context.getResources().getString(R.string.pref_key_recognition_server_ip);
+        spEdtor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         historyArr = new String[5];
-        Log.i(TAG, "RosIpPreference(Context context, AttributeSet attrs)");
     }
 
-    public RosIpPreference(Context context) {
-        this(context,null);
-        Log.i(TAG, "RosIpPreference(Context context)");
+    public YoutuIpPreference(Context context) {
+        super(context,null);
     }
 
     @Override
     public View onCreateView(ViewGroup parent) {
         super.onCreateView(parent);
-        Log.i(TAG, TAG + " -- onCreateView");
         View v = LayoutInflater.from(getContext()).inflate(R.layout.ip_preference_layout,parent,false);
         textViewIpType = (TextView) v.findViewById(R.id.id_ip_type);
         textViewIp = (TextView) v.findViewById(R.id.id_ip);
@@ -79,24 +69,22 @@ public class RosIpPreference extends DialogPreference {
 
     @Override
     protected void onBindView(View view) {
-        Log.i(TAG, TAG + " -- onBindView");
-        textViewIpType.setText("ROS服务器IP地址:");
+        textViewIpType.setText("优图服务器IP地址:");
         String ipInSp = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getString(SP_KEY_ROS_SERVER, Config.ROS_SERVER_IP);
+                .getString(KEY_YOUTU_SERVER_SP, Config.RECOGNITION_SERVER_IP);
         textViewIp.setText(ipInSp);
 
         input_history = PreferenceManager.getDefaultSharedPreferences(getContext()).
-                getString(KEY_ROS_HISTORY,INIT_HISTORY);
+                getString(KEY_YOUTU_HISTORY,INIT_HISTORY);
         historyArr = input_history.split("_");
         historyArr = Arrays.copyOf(historyArr, 5);
+
         super.onBindView(view);
     }
 
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
-        Log.i(TAG, TAG + " -- onBindDialogView");
-
         dialogEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -137,7 +125,6 @@ public class RosIpPreference extends DialogPreference {
 
     @Override
     protected View onCreateDialogView() {
-        Log.i(TAG, TAG + " -- onCreateDialogView");
         View v = LayoutInflater.from(getContext()).inflate(R.layout.pref_dialog_view,null);
 
         dialogEditText = (EditText) v.findViewById(R.id.id_edittext_ip);
@@ -168,7 +155,6 @@ public class RosIpPreference extends DialogPreference {
 
     //将每次输入的记录保存下来，存放在SharedPreference中
     public void writeToSharedPreference(String str) {
-        spEdtor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
         //如果历史记录中已经有了相同的ip，则不添加，否则才添加到历史记录
         if (!input_history.contains(str)){
             for(int i=historyArr.length-1;i>=3;i--) {
@@ -182,13 +168,12 @@ public class RosIpPreference extends DialogPreference {
                     sb.append("_").append(historyArr[i]);
                 }
             }
-            spEdtor.putString(KEY_ROS_HISTORY, sb.toString());
+            spEdtor.putString(KEY_YOUTU_HISTORY, sb.toString());
 //            Log.i(TAG, "写入SP的输入记录:"+sb.toString());
         }
-        spEdtor.putString(SP_KEY_ROS_SERVER, str);
+        spEdtor.putString(KEY_YOUTU_SERVER_SP, str);
         spEdtor.apply();
-        Config.ROS_SERVER_IP = str;
-        Log.i("Preference", "ROS IP地址设置为：" + str);
+        Config.RECOGNITION_SERVER_IP = str;
 
     }
 }

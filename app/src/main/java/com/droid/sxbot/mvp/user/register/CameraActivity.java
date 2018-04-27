@@ -2,6 +2,7 @@ package com.droid.sxbot.mvp.user.register;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,9 +18,10 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -123,7 +125,10 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
                 log("TextureView.SurfaceTextureListener -- onSurfaceTextureAvailable()");
                 mSurfaceTexture = surface;
-                takePreview();
+                if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    takePreview();
+                }
             }
 
             @Override
@@ -203,7 +208,6 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                 }
                 if (mTextureView.isAvailable()) {
                     initCamera();
-
                 }
             }
         });
@@ -296,7 +300,6 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
         },null);
 
         mCameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
-
         openCamera();
     }
 
@@ -305,14 +308,41 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
         log("openCamera:" + cameraFacingMode);
         mCameraID = ""+ cameraFacingMode;
         try{
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)!=
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
                     PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA},1);
+                //打开摄像头
+                mCameraManager.openCamera(mCameraID,stateCallback,null);
+            } else {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
             }
-            //打开摄像头
-            mCameraManager.openCamera(mCameraID,stateCallback,null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    @TargetApi(23)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+                            PackageManager.PERMISSION_GRANTED) {
+                try {
+                    mCameraManager.openCamera(mCameraID,stateCallback,null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                if(!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                    Intent intent = new Intent();
+                    intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+                    intent.setData(Uri.fromParts("package", getPackageName(), null));
+                    startActivity(intent);
+                    Toast.makeText(this, "无法获取打开摄像头权限，请到手机设置中进行授权", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "无法获取打开摄像头权限,请进行授权" , Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 
@@ -376,7 +406,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
     }
 
-
+    //拍照
     private void takePicture() {
         if (mCameraDevice == null) {
             return;
@@ -394,6 +424,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             // 自动曝光
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
             if (cameraFacingMode == CameraCharacteristics.LENS_FACING_BACK) {
+                //如果是后置摄像头
                 requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
             } else {
                 requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90);
@@ -434,7 +465,9 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             mCameraCaptureSession.close();
         }
         mImageReader.getSurface().release();
-        mCameraDevice.close();
+        if (mCameraDevice != null) {
+            mCameraDevice.close();
+        }
     }
 
     @Override

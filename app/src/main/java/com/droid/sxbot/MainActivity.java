@@ -41,9 +41,10 @@ import android.widget.Toast;
 
 import com.droid.sxbot.mvp.control.ControlFragment;
 import com.droid.sxbot.mvp.control.ControlPresenter;
-import com.droid.sxbot.mvp.scene.SceneFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStateFragment;
 import com.droid.sxbot.mvp.robot_state.RobotStatePresenter;
+import com.droid.sxbot.mvp.scene.SceneFragment;
+import com.droid.sxbot.mvp.user.UserFragment;
 import com.droid.sxbot.util.Util;
 
 
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private RobotStateFragment robotStateFragment;
     private ControlFragment controlFragment;
     private ControlPresenter controlPresenter;
+    private UserFragment userFragment;
     private RobotStatePresenter robotStatePresenter;
     private SceneFragment sceneFragment;
 
@@ -105,13 +107,16 @@ public class MainActivity extends AppCompatActivity {
             robotStateFragment.setArguments(b);
             controlFragment = new ControlFragment();
             sceneFragment = new SceneFragment();
+            userFragment = new UserFragment();
 
             fragmentManager.beginTransaction()
-                .add(R.id.container, robotStateFragment, robotStateFragment.getClass().getSimpleName())
-                .add(R.id.container, controlFragment, controlFragment.getClass().getSimpleName())
-                .add(R.id.container, sceneFragment, sceneFragment.getClass().getSimpleName())
-                .commit();
+                    .add(R.id.container, robotStateFragment, robotStateFragment.getClass().getSimpleName())
+                    .add(R.id.container, controlFragment, controlFragment.getClass().getSimpleName())
+                    .add(R.id.container, sceneFragment, sceneFragment.getClass().getSimpleName())
+                    .add(R.id.container, userFragment, userFragment.getClass().getSimpleName())
+                    .commit();
             bottomNavigationView.setSelectedItemId(R.id.robot_state);
+//            bottomNavigationView.setSelectedItemId(R.id.user);
         } else {
             log("restore savedInstanceState ");
             fragmentManager = getSupportFragmentManager();
@@ -124,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             robotStateFragment = (RobotStateFragment) fragmentManager.getFragment(savedInstanceState, RobotStateFragment.class.getSimpleName());
             controlFragment = (ControlFragment) fragmentManager.getFragment(savedInstanceState, ControlFragment.class.getSimpleName());
             sceneFragment = (SceneFragment) fragmentManager.getFragment(savedInstanceState, SceneFragment.class.getSimpleName());
+            userFragment = (UserFragment) fragmentManager.getFragment(savedInstanceState, UserFragment.class.getSimpleName());
             robotStateFragment.setArguments(b);
             controlFragment.setArguments(b);
             selectedNavItem = savedInstanceState.getInt(KEY_NAV_ITEM);
@@ -137,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     bottomNavigationView.setSelectedItemId(R.id.scene);
                     break;
+                case 3:
+                    bottomNavigationView.setSelectedItemId(R.id.user);
                 default:
                     break;
             }
@@ -151,16 +159,20 @@ public class MainActivity extends AppCompatActivity {
                 new int[]{getResources().getColor(R.color.colorPrimary, null), Color.GRAY});
         bottomNavigationView.setItemIconTintList(list);
         bottomNavigationView.setItemTextColor(list);
-
+        //去除bottomNavigationView的移动模式
+        Util.disableShiftMode(bottomNavigationView);
         initBroadcastReceiver();
     }
 
     private void initConfiguration() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        Config.ROS_SERVER_IP = sp.getString(getResources().getString(R.string.pref_key_ros_server_ip), "192.168.0.135");
+        Config.ROS_SERVER_IP = sp.getString(getResources()
+                .getString(R.string.pref_key_ros_server_ip), "192.168.8.101");
+        Config.RECOGNITION_SERVER_IP = sp.getString(getResources()
+                .getString(R.string.pref_key_recognition_server_ip), "192.168.8.141");
         Config.speed = sp.getInt(getResources().getString(R.string.pref_key_speed), 30) / 100.0;
         Config.AUDIO_FILE_SELECT_MODE = sp.getInt(getResources().getString(R.string.pref_key_file_set_mode), -1);
-        log("初始设置：" + Config.ROS_SERVER_IP + " ," + Config.speed + "文件选择模式:" + Config.AUDIO_FILE_SELECT_MODE);
+        log("初始设置："+Config.getInfo());
     }
 
     @Override
@@ -193,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         fragmentManager.beginTransaction()
                                 .hide(controlFragment)
                                 .hide(sceneFragment)
+                                .hide(userFragment)
                                 .show(robotStateFragment)
                                 .commit();
                         selectedNavItem = 0;
@@ -202,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
                         fragmentManager.beginTransaction()
                                 .hide(robotStateFragment)
                                 .hide(sceneFragment)
+                                .hide(userFragment)
                                 .show(controlFragment)
                                 .commit();
                         selectedNavItem = 1;
@@ -211,9 +225,21 @@ public class MainActivity extends AppCompatActivity {
                         fragmentManager.beginTransaction()
                                 .hide(robotStateFragment)
                                 .hide(controlFragment)
+                                .hide(userFragment)
                                 .show(sceneFragment)
                                 .commit();
                         selectedNavItem = 2;
+                        break;
+                    case R.id.user:
+                        pageTitle.setText("用户管理");
+                        fragmentManager.beginTransaction()
+                                .hide(robotStateFragment)
+                                .hide(controlFragment)
+                                .hide(sceneFragment)
+                                .show(userFragment)
+                                .commit();
+                        selectedNavItem = 3;
+                        break;
                     default:
                         break;
                 }
@@ -263,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager.putFragment(outState, robotStateFragment.getClass().getSimpleName(), robotStateFragment);
         fragmentManager.putFragment(outState, controlFragment.getClass().getSimpleName(), controlFragment);
         fragmentManager.putFragment(outState, sceneFragment.getClass().getSimpleName(), sceneFragment);
-
+        fragmentManager.putFragment(outState, userFragment.getClass().getSimpleName(), userFragment);
         outState.putInt(KEY_NAV_ITEM, selectedNavItem);
         super.onSaveInstanceState(outState);
 

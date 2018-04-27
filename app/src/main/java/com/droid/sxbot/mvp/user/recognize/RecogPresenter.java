@@ -65,7 +65,6 @@ public class RecogPresenter implements RecogContract.Presenter {
                         } else if (faceRecogResult.getRet() == 1000) {
                             view.showRecognitionSuccess("未注册用户");
                         }
-
                     }
 
                     @Override
@@ -84,7 +83,7 @@ public class RecogPresenter implements RecogContract.Presenter {
     @Override
     public void start() {
         StringBuilder baseUrl = new StringBuilder("http://");
-        baseUrl.append(Config.ROS_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
+        baseUrl.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl.toString())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

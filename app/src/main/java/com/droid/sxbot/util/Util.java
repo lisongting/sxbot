@@ -3,6 +3,9 @@ package com.droid.sxbot.util;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
+import android.support.design.widget.BottomNavigationView;
 import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.TypedValue;
@@ -12,6 +15,7 @@ import android.view.WindowManager;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -113,6 +117,24 @@ public class Util {
             height = TypedValue.complexToDimensionPixelSize(tv.data, context.getResources().getDisplayMetrics());
         }
         return height;
+    }
+
+    public static void disableShiftMode(BottomNavigationView bottomNavigationView) {
+        BottomNavigationMenuView menuView = (BottomNavigationMenuView) bottomNavigationView.getChildAt(0);
+        try {
+            Field shiftMode = menuView.getClass().getDeclaredField("mShiftingMode");
+            shiftMode.setAccessible(true);
+            shiftMode.setBoolean(menuView,false);
+            shiftMode.setAccessible(false);
+            for(int i=0;i<menuView.getChildCount();i++) {
+                BottomNavigationItemView itemView = (BottomNavigationItemView) menuView.getChildAt(i);
+                itemView.setShiftingMode(false);
+                itemView.setChecked(itemView.getItemData().isChecked());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static boolean isLargeDevice(Context context) {

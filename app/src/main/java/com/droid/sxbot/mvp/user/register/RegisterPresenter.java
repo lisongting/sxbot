@@ -78,7 +78,7 @@ public class RegisterPresenter implements RegisterContract.Presenter {
     @Override
     public void start() {
         StringBuilder baseUrl = new StringBuilder("http://");
-        baseUrl.append(Config.ROS_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
+        baseUrl.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl.toString())
                 .addConverterFactory(GsonConverterFactory.create())

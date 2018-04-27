@@ -25,13 +25,13 @@ public class Config {
     public static boolean isRosServerConnected = false;
 
     //Ros服务器IP
-    public static String ROS_SERVER_IP = "192.168.0.135";
+    public static String ROS_SERVER_IP = "192.168.8.101";
 
     //ROS服务端的端口
     public static final String ROS_SERVER_PORT = "9090";
 
     //人脸识别服务端的IP
-    public static final String RECOGNITION_SERVER_IP = "192.168.0.135";
+    public static String RECOGNITION_SERVER_IP = "192.168.8.141";
 
     //人脸识别服务器的端口
     public static final String RECOGNITION_SERVER_PORT = "8000";
@@ -44,5 +44,15 @@ public class Config {
 
     //音频文件选择模式。如果为1，表示始终在选择点之后立即选择文件，如果为0，表示始终稍后选择文件
     public static int AUDIO_FILE_SELECT_MODE = -1;
+
+    public static String getInfo(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("ros服务端:").append(ROS_SERVER_IP).append("\n")
+                .append("优图服务端:").append(RECOGNITION_SERVER_IP).append("\n")
+                .append("speed:").append(speed).append("\n")
+                .append("audio_file_select_mode:" + AUDIO_FILE_SELECT_MODE);
+        return sb.toString();
+    }
+
 
 }

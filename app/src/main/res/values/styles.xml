@@ -36,7 +36,6 @@
     </style>
 
     <style name="SwitcherTheme" parent="Theme.AppCompat.Light">
-
         <item name="colorControlActivated">@color/colorPrimary</item>
     </style>
 

@@ -36,11 +36,14 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".mvp.map.MapActivity" />
         <activity android:name=".mvp.user.userlist.UserListActivity"
-            android:theme="@style/TranslucentTheme"/>
+            android:theme="@style/TranslucentTheme"
+            android:screenOrientation="portrait"/>
         <activity android:name=".mvp.user.register.CameraActivity"
-            android:theme="@style/TranslucentTheme"/>
+            android:theme="@style/TranslucentTheme"
+            android:screenOrientation="portrait"/>
         <activity android:name=".mvp.user.recognize.RecogActivity"
-            android:theme="@style/TranslucentTheme"/>
+            android:theme="@style/TranslucentTheme"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

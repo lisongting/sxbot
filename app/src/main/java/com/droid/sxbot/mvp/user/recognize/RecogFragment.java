@@ -138,6 +138,7 @@ public class RecogFragment extends Fragment implements RecogContract.View{
                     }
                 })
                 .create();
+
     }
 
     @Override
@@ -153,7 +154,6 @@ public class RecogFragment extends Fragment implements RecogContract.View{
     }
 
     private void initCallbackAndListeners() {
-
         cameraCallback = new CameraDevice.StateCallback() {
             @Override
             public void onOpened(@NonNull CameraDevice camera) {
@@ -185,7 +185,6 @@ public class RecogFragment extends Fragment implements RecogContract.View{
                 log("TextureView.SurfaceTextureListener -- onSurfaceTextureAvailable()");
                 surfaceTexture = surface;
                 startPreview();
-                startTimerTask();
             }
 
             @Override
@@ -201,7 +200,7 @@ public class RecogFragment extends Fragment implements RecogContract.View{
 
             @Override
             public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-                Log.v(TAG,"TextureView.SurfaceTextureListener -- onSurfaceTextureUpdated()");
+//                Log.v(TAG,"TextureView.SurfaceTextureListener -- onSurfaceTextureUpdated()");
             }
         };
 
@@ -238,7 +237,12 @@ public class RecogFragment extends Fragment implements RecogContract.View{
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
-
+                if (detectTimer != null) {
+                    detectTimer.cancel();
+                    startTimerTask();
+                } else {
+                    startTimerTask();
+                }
             }
 
             @Override
@@ -270,6 +274,7 @@ public class RecogFragment extends Fragment implements RecogContract.View{
 
     public void switchCamera() {
         closeCamera();
+        isDetecting = true;
         if (cameraFacingMode == CameraCharacteristics.LENS_FACING_BACK) {
             cameraFacingMode =  CameraCharacteristics.LENS_FACING_FRONT;
         } else {
@@ -277,7 +282,6 @@ public class RecogFragment extends Fragment implements RecogContract.View{
         }
         if (textureView.isAvailable()) {
             initCamera();
-
         }
     }
 

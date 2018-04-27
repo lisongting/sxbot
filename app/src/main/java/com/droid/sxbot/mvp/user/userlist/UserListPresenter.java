@@ -62,7 +62,7 @@ public class UserListPresenter implements UserListContract.Presenter {
     @Override
     public void start() {
         StringBuilder baseUrl = new StringBuilder("http://");
-        baseUrl.append(Config.ROS_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
+        baseUrl.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
 
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl.toString())
@@ -127,9 +127,8 @@ public class UserListPresenter implements UserListContract.Presenter {
 
     @Override
     public void deleteUser(final String userId) {
-
         final StringBuilder url = new StringBuilder("http://");
-        url.append(Config.ROS_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/")
+        url.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/")
             .append("management/logout?userid=").append(userId);
 
         Observable.create(new ObservableOnSubscribe<Integer>() {

@@ -30,4 +30,9 @@
         android:id="@+id/scene"
         android:icon="@drawable/map"
         android:title="场景" />
+
+    <item
+        android:id="@+id/user"
+        android:icon="@drawable/user"
+        android:title="用户" />
 </menu>

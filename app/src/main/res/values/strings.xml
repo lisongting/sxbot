@@ -19,6 +19,7 @@
     <string name="key_broadcast_ros_connection">ros_conn_status</string>
 
     <string name="pref_key_ros_server_ip">ros_server_ip</string>
+    <string name="pref_key_recognition_server_ip">recognition_server_ip</string>
 
     <string name="pref_key_speed">xbot_speed</string>
 
