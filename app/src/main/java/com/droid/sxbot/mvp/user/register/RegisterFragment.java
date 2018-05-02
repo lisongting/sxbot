@@ -1,6 +1,5 @@
 package com.droid.sxbot.mvp.user.register;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,13 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.droid.sxbot.R;
 import com.droid.sxbot.util.RegexCheckUtil;
+import com.droid.sxbot.util.Util;
 
 
 /**
@@ -57,9 +56,7 @@ public class RegisterFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        WindowManager manager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metrics = new DisplayMetrics();
-        manager.getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = Util.getScreenInfo(getContext());
         if (metrics.heightPixels < 2000) {
             window.setLayout((int) (metrics.widthPixels * 0.7), (int) (metrics.heightPixels * 0.5));
         } else {

@@ -8,13 +8,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -26,12 +30,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -52,7 +56,7 @@ import static android.view.View.GONE;
  * Created by lisongting on 2017/12/14.
  */
 
-public class CameraActivity extends AppCompatActivity implements RegisterContract.View{
+public class CameraActivity extends AppCompatActivity implements RegisterContract.View,View.OnTouchListener{
 
     private TextureView mTextureView;
     private SurfaceTexture mSurfaceTexture;
@@ -73,7 +77,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
     private RegisterContract.Presenter presenter;
     private boolean isPreviewing = true;
     private int cameraFacingMode;
-
+    private DisplayMetrics metrics;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,9 +148,10 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
             @Override
             public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
+                
             }
         });
+        mTextureView.setOnTouchListener(this);
 
         bt_ok.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -239,11 +244,9 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
     //初始化摄像头
     private void initCamera() {
         log("initCamera()");
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        DisplayMetrics dm = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(dm);
-        int width = dm.widthPixels;
-        int height = dm.heightPixels;
+        metrics = Util.getScreenInfo(this);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
 
         log( "DisplayMetrics width:" + width + ",height:" + height);
         mImageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
@@ -381,9 +384,11 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                     mCameraCaptureSession = session;
 
                     //设置自动对焦点
-                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
                     //打开自动曝光
-                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+//                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+//                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
                     //显示预览
                     CaptureRequest previewRequest = requestBuilder.build();
 
@@ -422,7 +427,9 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             // 自动对焦
             requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             // 自动曝光
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+//            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+//            requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
             if (cameraFacingMode == CameraCharacteristics.LENS_FACING_BACK) {
                 //如果是后置摄像头
                 requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
@@ -485,5 +492,58 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
     private void log(String s) {
         Log.i(TAG, s);
+    }
+
+    private void focus(int x, int y) {
+        int squareWith = 10;
+        int left = x - squareWith <= 0 ? 0 : x - squareWith;
+        int right = x + squareWith > metrics.widthPixels ? metrics.widthPixels : x + squareWith;
+        int top = y - squareWith <= 0 ? 0 : y - squareWith;
+        int bot = y + squareWith >= metrics.heightPixels ? metrics.heightPixels : y + squareWith;
+        Rect rect = new Rect(left, top, right,bot);
+        Toast.makeText(this, "正在自动聚焦", Toast.LENGTH_SHORT).show();
+
+        requestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, new MeteringRectangle[] {new MeteringRectangle(rect, 1000)});
+        requestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, new MeteringRectangle[] {new MeteringRectangle(rect, 1000)});
+        requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+        requestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        requestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+
+        CaptureRequest request = requestBuilder.build();
+        try {
+            mCameraCaptureSession.setRepeatingRequest(request, new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
+                    log("CameraCaptureSession.CaptureCallback -- onCaptureStarted()");
+                    super.onCaptureStarted(session, request, timestamp, frameNumber);
+                }
+
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                    log("CameraCaptureSession.CaptureCallback -- onCaptureCompleted()");
+                    super.onCaptureCompleted(session, request, result);
+                    requestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+                    requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                    request = requestBuilder.build();
+                    try {
+                        mCameraCaptureSession.setRepeatingRequest(request, null, null);
+                    } catch (CameraAccessException e) {
+                        Log.e(TAG, "setRepeatingRequest failed, errMsg: " + e.getMessage());
+                    }
+                }
+            }, null);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "setRepeatingRequest failed, " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            focus((int)event.getX(), (int)event.getY());
+        }
+        return false;
     }
 }

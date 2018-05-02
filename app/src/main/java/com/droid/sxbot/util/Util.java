@@ -150,6 +150,9 @@ public class Util {
 
     public static DisplayMetrics getScreenInfo(Context context) {
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (manager == null) {
+            return null;
+        }
         Display display = manager.getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
