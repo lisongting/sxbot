@@ -155,7 +155,9 @@ public class AnimateDialog extends DialogFragment {
 
     }
 
-    public void setModeAndContent(int mode, String largeContentText, boolean isShowingTwoButtons, OnButtonClickListener listener) {
+    public void setModeAndContent(int mode, String largeContentText,
+                                  boolean isShowingTwoButtons,
+                                  OnButtonClickListener listener) {
         this.listener = listener;
         this.mode = mode;
         this.largeContentText = largeContentText;

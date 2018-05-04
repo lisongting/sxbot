@@ -56,9 +56,9 @@ public class RegisterPresenter implements RegisterContract.Presenter {
                         if (ret == 0) {
                             view.showSuccess();
                         } else if (ret == 11) {
-                            view.showInfo("注册失败:图片尺寸过大");
+                            view.showInfo("注册失败，图片尺寸过大");
                         } else if (ret == 9) {
-                            view.showInfo("注册失败:未检测到人脸");
+                            view.showInfo("注册失败，未检测到人脸");
                         }else {
                             view.showInfo("注册失败，错误码：" + ret);
                         }

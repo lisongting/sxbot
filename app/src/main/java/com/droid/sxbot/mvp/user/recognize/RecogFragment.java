@@ -1,9 +1,7 @@
 package com.droid.sxbot.mvp.user.recognize;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,6 +25,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
@@ -39,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.droid.sxbot.AnimateDialog;
 import com.droid.sxbot.R;
 import com.droid.sxbot.customview.FaceOverlayView;
 import com.droid.sxbot.entity.FaceData;
@@ -94,7 +94,8 @@ public class RecogFragment extends Fragment implements RecogContract.View{
     private RecogContract.Presenter presenter;
     private int cameraFacingMode;
     private FaceOverlayView faceOverlayView;
-    private AlertDialog alertDialog;
+    private AnimateDialog dialog;
+    private FragmentManager fragmentManager;
 
     public RecogFragment() {
         cameraFacingMode = CameraCharacteristics.LENS_FACING_BACK;
@@ -106,7 +107,7 @@ public class RecogFragment extends Fragment implements RecogContract.View{
         View v = inflater.inflate(R.layout.fragment_recognize, container, false);
         textureView = v.findViewById(R.id.texture_view);
         faceOverlayView = v.findViewById(R.id.face_overlay_view);
-
+        fragmentManager = getFragmentManager();
         initView();
         return v;
     }
@@ -122,23 +123,6 @@ public class RecogFragment extends Fragment implements RecogContract.View{
         }
 
         facesCountMap = new SparseIntArray();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        alertDialog = builder
-                .setCancelable(false)
-                .setNegativeButton("退出", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        getActivity().finish();
-                    }
-                })
-                .setPositiveButton("继续", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        alertDialog.dismiss();
-                    }
-                })
-                .create();
-
     }
 
     @Override
@@ -379,7 +363,7 @@ public class RecogFragment extends Fragment implements RecogContract.View{
                                 facesCountMap.put(personId, tmpFrameCount);
                             }else if (tmpFrameCount == 3) {
                                 faceBitmap = ImageUtils.cropFace(faces[0], RGBFace);
-                                if (!alertDialog.isShowing()) {
+                                if (dialog==null||!dialog.isVisible()) {
                                     presenter.recognize(
                                             ImageUtils.encodeBitmapToBase64(faceBitmap, Bitmap.CompressFormat.JPEG,100));
                                     getActivity().runOnUiThread(new Runnable() {
@@ -428,18 +412,29 @@ public class RecogFragment extends Fragment implements RecogContract.View{
 
     @Override
     public synchronized void showRecognitionSuccess(String userName) {
-        if (getContext() == null ) {
+        if (getContext() == null) {
             return;
         }
-        if (alertDialog != null) {
-            if( alertDialog.isShowing()){
+        if (dialog != null) {
+            if(dialog.isVisible()){
                 return;
             }
+            fragmentManager.beginTransaction().remove(dialog).commit();
         }
-        alertDialog.setTitle("识别结果：" + userName);
-        alertDialog.setMessage("是否继续识别？");
-        alertDialog.show();
-//        Toast.makeText(getContext(), "识别结果："+userName, Toast.LENGTH_SHORT).show();
+        dialog = new AnimateDialog();
+        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                "识别结果：" + userName+"\n是否继续识别？", true,
+                new AnimateDialog.OnButtonClickListener() {
+                    @Override
+                    public void onCancel() {
+                        getActivity().finish();
+                    }
+                    @Override
+                    public void onConfirm() {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show(getFragmentManager(), "dialog");
     }
 
     @Override
@@ -447,12 +442,21 @@ public class RecogFragment extends Fragment implements RecogContract.View{
         if (getContext() == null) {
             return;
         }
-        if (alertDialog != null) {
-            if( alertDialog.isShowing()){
-                return;
-            }
+        if (dialog != null) {
+            fragmentManager.beginTransaction().remove(dialog).commit();
         }
-        Toast.makeText(getContext(), s, Toast.LENGTH_SHORT).show();
+        dialog = new AnimateDialog();
+        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                s, false,
+                new AnimateDialog.OnButtonClickListener() {
+                    @Override
+                    public void onCancel() {}
+                    @Override
+                    public void onConfirm() {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show(getFragmentManager(), "dialog");
     }
 
     @Override

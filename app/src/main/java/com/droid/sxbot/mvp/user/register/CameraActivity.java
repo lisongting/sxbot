@@ -1,6 +1,7 @@
 package com.droid.sxbot.mvp.user.register;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -36,16 +38,17 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.droid.sxbot.AnimateDialog;
 import com.droid.sxbot.R;
 import com.droid.sxbot.util.ImageUtils;
 import com.droid.sxbot.util.Util;
 
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -60,39 +63,46 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
     private TextureView mTextureView;
     private SurfaceTexture mSurfaceTexture;
-    private ImageView ivShow,btCapture,btBack,btSwithCam;
+    private ImageView ivShow,btCapture,btBack,btSwitchCam,btRotateLeft,btRotateRight;
     private CameraManager mCameraManager;//摄像头管理器
     private String mCameraID;//摄像头Id 0 为后  1 为前
     private ImageReader mImageReader;
     private CameraCaptureSession mCameraCaptureSession;
     private CameraDevice mCameraDevice;
-    private Button bt_ok,bt_reCapture,bt_home;
-    private LinearLayout linearLayout;
+    private Button btOk,btRecapture,btHome;
+    private LinearLayout llBtHolder,llRotateLayout;
 
     public static final String TAG = "CameraActivity";
-//    private Bitmap faceBitmap;
-    private SoftReference<Bitmap> bitmapSoftReference ;
+    private Bitmap faceBitmap;
+//    private SoftReference<Bitmap> bitmapSoftReference ;
     private Size mPreviewSize;
     private CaptureRequest.Builder requestBuilder;
     private RegisterContract.Presenter presenter;
     private boolean isPreviewing = true;
     private int cameraFacingMode;
     private DisplayMetrics metrics;
+    private AnimateDialog dialog;
+    private FragmentManager fragmentManager;
+    private int ivShowRotateAngle = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_take_head_photo);
 
-        linearLayout = (LinearLayout) findViewById(R.id.bottom_linear_layout);
-        bt_ok = (Button) findViewById(R.id.id_bt_ok);
-        bt_reCapture = (Button) findViewById(R.id.id_bt_again);
-        bt_home = (Button) findViewById(R.id.id_bt_home);
+        llBtHolder = (LinearLayout) findViewById(R.id.bottom_linear_layout);
+        llRotateLayout = (LinearLayout) findViewById(R.id.bottom_rotate_layout);
+        btOk = (Button) findViewById(R.id.id_bt_ok);
+        btRecapture = (Button) findViewById(R.id.id_bt_again);
+        btHome = (Button) findViewById(R.id.id_bt_home);
         ivShow = (ImageView) findViewById(R.id.id_iv_show_picture);
         btBack = findViewById(R.id.bt_back);
         mTextureView = (TextureView) findViewById(R.id.id_texture_view);
-        btCapture = findViewById(R.id.capture);
-        btSwithCam = findViewById(R.id.bt_switch);
+        btCapture = (ImageView)findViewById(R.id.capture);
+        btSwitchCam = (ImageView)findViewById(R.id.bt_switch);
+        btRotateLeft = (ImageView)findViewById(R.id.id_bt_rotate_left);
+        btRotateRight = (ImageView)findViewById(R.id.id_bt_rotate_right);
 
         //LENS_FACING_FRONT 后置摄像头， LENS_FACING_BACK  前置摄像头
         cameraFacingMode = CameraCharacteristics.LENS_FACING_BACK;
@@ -107,6 +117,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
     @Override
     protected void onResume() {
         super.onResume();
+        fragmentManager = getSupportFragmentManager();
         presenter = new RegisterPresenter(this);
     }
 
@@ -153,16 +164,28 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
         });
         mTextureView.setOnTouchListener(this);
 
-        bt_ok.setOnClickListener(new View.OnClickListener() {
+        btOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String userName = getIntent().getStringExtra("userName");
+//                Bitmap tmp = bitmapSoftReference.get();
+                if (faceBitmap == null) {
+                    log("faceBitmap is null");
+                    return;
+                }
+                Matrix matrix = new Matrix();
+                matrix.postRotate(ivShowRotateAngle);
+                //实际发给服务器是旋转过后图像
+                Bitmap target = Bitmap.createBitmap(faceBitmap, 0, 0,
+                        faceBitmap.getWidth(), faceBitmap.getHeight(), matrix, true);
+
+                log("base64:" + ImageUtils.encodeBitmapToBase64(target, Bitmap.CompressFormat.JPEG, 100));
                 presenter.register(Util.makeUserNameToHex(userName),
-                        ImageUtils.encodeBitmapToBase64(bitmapSoftReference.get(), Bitmap.CompressFormat.JPEG, 100));
+                        ImageUtils.encodeBitmapToBase64(target, Bitmap.CompressFormat.JPEG, 100));
             }
         });
 
-        bt_reCapture.setOnClickListener(new View.OnClickListener() {
+        btRecapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 reCapture();
@@ -170,7 +193,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             }
         });
 
-        bt_home.setOnClickListener(new View.OnClickListener() {
+        btHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onBackPressed();
@@ -192,7 +215,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
             }
         });
 
-        btSwithCam.setOnClickListener(new View.OnClickListener() {
+        btSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isPreviewing) {
@@ -216,6 +239,31 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                 }
             }
         });
+
+        View.OnClickListener rotateBtListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int rotateAngle =0;
+                switch (v.getId()) {
+                    case R.id.id_bt_rotate_left:
+                        rotateAngle = -90;
+                        break;
+                    case R.id.id_bt_rotate_right:
+                        rotateAngle = 90;
+                        break;
+                    default:break;
+                }
+                ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(ivShow, "rotation",
+                        ivShowRotateAngle, ivShowRotateAngle+rotateAngle);
+                objectAnimator.setDuration(500);
+                objectAnimator.setInterpolator(new LinearInterpolator());
+                objectAnimator.start();
+                ivShowRotateAngle += rotateAngle;
+
+            }
+        };
+        btRotateLeft.setOnClickListener(rotateBtListener);
+        btRotateRight.setOnClickListener(rotateBtListener);
 
     }
 
@@ -258,7 +306,8 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                 mTextureView.setVisibility(GONE);
                 btCapture.setVisibility(GONE);
                 ivShow.setVisibility(View.VISIBLE);
-                linearLayout.setVisibility(View.VISIBLE);
+                llRotateLayout.setVisibility(View.VISIBLE);
+                llBtHolder.setVisibility(View.VISIBLE);
 
                 Image image = reader.acquireLatestImage();
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -272,31 +321,36 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                     //调节bitmap的尺寸大小
                     int width = tmpBitmap.getWidth();
                     int height = tmpBitmap.getHeight();
-                    Matrix matrix = new Matrix();
+                    Matrix smallMatrix = new Matrix();
                     Matrix matrix1 = new Matrix();
 
                     //如果是前置摄像头，则拍出来的照片要进行镜像水平翻转
                     if (cameraFacingMode == CameraCharacteristics.LENS_FACING_BACK) {
                         if (width >= 1500 || height >= 1500) {
-                            matrix.postScale(-0.3F, 0.3F);
+                            smallMatrix.postScale(-0.3F, 0.3F);
                         } else {
-                            matrix.postScale(-0.5F, 0.5F);
+                            smallMatrix.postScale(-0.5F, 0.5F);
                         }
 
                         matrix1.postScale(-1, 1);
                     } else {
                         if (width >= 1500 || height >= 1500) {
-                            matrix.postScale(0.3F, 0.3F);
+                            smallMatrix.postScale(0.3F, 0.3F);
                         } else {
-                            matrix.postScale(0.5F, 0.5F);
+                            smallMatrix.postScale(0.5F, 0.5F);
                         }
                         matrix1.postScale(1, 1);
                     }
-                    bitmapSoftReference = new SoftReference<Bitmap>(Bitmap.createBitmap(tmpBitmap, 0, 0, width, height, matrix, true));
-
+                    //将图片缩小以发送给人脸识别服务端
+//                    bitmapSoftReference = new SoftReference<Bitmap>(
+//                            Bitmap.createBitmap(tmpBitmap, 0, 0, width, height, smallMatrix, true));
+                    faceBitmap = Bitmap.createBitmap(tmpBitmap, 0, 0, width, height, smallMatrix, true);
                     WeakReference<Bitmap> bitmapWeakReference =
-                            new WeakReference<Bitmap>(Bitmap.createBitmap(tmpBitmap, 0, 0, width, height, matrix1, true));
+                            new WeakReference<Bitmap>(
+                                    Bitmap.createBitmap(tmpBitmap, 0, 0, width, height, matrix1, true));
+                    //在ImageView中展示原图
                     ivShow.setImageBitmap(bitmapWeakReference.get());
+
                     image.close();
                 }
             }
@@ -448,7 +502,8 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
     public void reCapture() {
         ivShow.setVisibility(GONE);
-        linearLayout.setVisibility(GONE);
+        llBtHolder.setVisibility(GONE);
+        llRotateLayout.setVisibility(GONE);
         mTextureView.setVisibility(View.VISIBLE);
         btCapture.setVisibility(View.VISIBLE);
     }
@@ -457,9 +512,9 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
     protected void onDestroy() {
         super.onDestroy();
         log("CameraActivity--onDestroy--");
-        if (bitmapSoftReference != null) {
-            bitmapSoftReference.clear();
-        }
+//        if (bitmapSoftReference != null) {
+//            bitmapSoftReference.clear();
+//        }
         if (mSurfaceTexture != null) {
             mSurfaceTexture.release();
         }
@@ -479,15 +534,44 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
 
     @Override
     public void showInfo(String s) {
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        if (dialog != null) {
+            fragmentManager.beginTransaction().remove(dialog).commit();
+        }
+        dialog = new AnimateDialog();
+        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                s, false,
+                new AnimateDialog.OnButtonClickListener() {
+                    @Override
+                    public void onCancel() {}
+                    @Override
+                    public void onConfirm() {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show(fragmentManager, "dialog");
     }
 
     @Override
     public void showSuccess() {
-        Toast.makeText(CameraActivity.this, "注册成功", Toast.LENGTH_LONG).show();
-        bt_ok.setVisibility(GONE);
-        bt_reCapture.setVisibility(GONE);
-        bt_home.setVisibility(View.VISIBLE);
+//        Toast.makeText(CameraActivity.this, "注册成功", Toast.LENGTH_LONG).show();
+        if (dialog != null) {
+            fragmentManager.beginTransaction().remove(dialog).commit();
+        }
+        dialog = new AnimateDialog();
+        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                "注册成功", false,
+                new AnimateDialog.OnButtonClickListener() {
+                    @Override
+                    public void onCancel() {}
+                    @Override
+                    public void onConfirm() {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show(fragmentManager, "dialog");
+        btOk.setVisibility(GONE);
+        btRecapture.setVisibility(GONE);
+        btHome.setVisibility(View.VISIBLE);
     }
 
     private void log(String s) {

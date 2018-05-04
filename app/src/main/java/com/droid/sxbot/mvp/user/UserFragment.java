@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.droid.sxbot.AnimateDialog;
 import com.droid.sxbot.R;
 import com.droid.sxbot.mvp.user.recognize.RecogActivity;
 import com.droid.sxbot.mvp.user.register.RegisterFragment;
@@ -29,10 +30,8 @@ public class UserFragment extends Fragment {
 
     private Button btUserList,btRegister, btRecognize;
     private RegisterFragment registerFragment;
-
-    public UserFragment() {
-
-    }
+    AnimateDialog dialog;
+    public UserFragment() {}
 
     @Nullable
     @Override
@@ -76,6 +75,10 @@ public class UserFragment extends Fragment {
             }
         });
 
+    }
+
+    public void onResume(){
+        super.onResume();
     }
 
     @Override

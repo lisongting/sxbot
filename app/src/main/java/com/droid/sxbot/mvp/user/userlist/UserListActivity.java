@@ -1,9 +1,8 @@
 package com.droid.sxbot.mvp.user.userlist;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -18,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.droid.sxbot.AnimateDialog;
 import com.droid.sxbot.R;
 import com.droid.sxbot.entity.UserInfo;
 import com.droid.sxbot.util.Util;
@@ -37,6 +37,8 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
     private UserListAdapter userListAdapter;
     private TextView title;
     private ImageButton btBack,btDelete;
+    private AnimateDialog dialog;
+    private FragmentManager fragmentManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,8 +48,8 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
 
 //        getSupportActionBar().setTitle("用户列表");
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         presenter = new UserListPresenter(this,this);
+        fragmentManager = getSupportFragmentManager();
         initView();
         initListeners();
     }
@@ -58,7 +60,6 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
         title = findViewById(R.id.page_title);
         btBack = findViewById(R.id.ib_back);
         btDelete = findViewById(R.id.ib_delete);
-
 
         //获取状态栏高度，显示一个占位的View(该view和actionbar颜色相同)，达到沉浸式状态栏效果
         View status_bar = findViewById(R.id.status_bar_view);
@@ -77,7 +78,6 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
 
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary,R.color.colorPrimaryDark,R.color.colorLightPink);
-
 
     }
 
@@ -99,25 +99,26 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
         userListAdapter.setOnDeleteListener(new UserListAdapter.OnDeleteListener() {
             @Override
             public void onDelete(int position, final String name) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(UserListActivity.this);
-                builder.setTitle("是否删除用户:"+name)
-                        .setMessage("人脸识别服务器将清除该用户的姓名和面部数据。")
-                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                if (dialog != null) {
+                    fragmentManager.beginTransaction().remove(dialog).commit();
+                }
+                StringBuilder sb = new StringBuilder("是否删除用户：");
+                sb.append(name).append("\n").append("(清除该用户的面部数据)");
+                dialog = new AnimateDialog();
+                dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                        sb.toString(), true,
+                        new AnimateDialog.OnButtonClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onCancel() {
                                 userListAdapter.setDeleteMode(false);
                             }
-                        })
-                        .setPositiveButton("删除", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onConfirm() {
                                 userListAdapter.setDeleteMode(false);
                                 presenter.deleteUser(Util.makeUserNameToHex(name));
                             }
-                        })
-                        .setCancelable(false)
-                        .create()
-                        .show();
+                        });
+                dialog.show(fragmentManager, "dialog");
             }
         });
 
@@ -181,8 +182,21 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
 
     @Override
     public void showInfo(String s) {
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-       // presenter.requestUserData();
+        if (dialog != null) {
+            fragmentManager.beginTransaction().remove(dialog).commit();
+        }
+        dialog = new AnimateDialog();
+        dialog.setModeAndContent(AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,
+                s, false,
+                new AnimateDialog.OnButtonClickListener() {
+                    @Override
+                    public void onCancel() {}
+                    @Override
+                    public void onConfirm() {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show(fragmentManager, "dialog");
     }
 
     @Override
