@@ -29,30 +29,60 @@
             android:layout_marginBottom="50dp"
             />
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/id_text_input_layout"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/center_input_layout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="150dp"
-            android:layout_below="@id/tv_register"
-            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:layout_centerInParent="true"
             >
-            <EditText
-                android:id="@+id/id_textView"
-                android:layout_width="300dp"
+            <TextView
+                android:id="@+id/id_group_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="选择分组"
+                android:textSize="16sp"
+                android:textColor="@color/secondary_text"
+                android:drawableEnd="@drawable/ic_arrow_down"
+                android:gravity="center_vertical"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/id_group_list"
+                android:layout_width="200dp"
+                android:layout_height="100dp"
+                android:visibility="gone"
+                android:background="@color/white"
+                >
+
+            </android.support.v7.widget.RecyclerView>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/id_text_input_layout"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:hint="@string/register_hint"
-                android:inputType="textPersonName"
-                android:textSize="20sp" />
+                android:textColorHint="@color/secondary_text"
+                >
+                <EditText
+                    android:id="@+id/id_textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:hint="@string/register_hint"
+                    android:backgroundTint="@color/colorPrimaryDark"
+                    android:inputType="textPersonName"
+                    android:textSize="16sp" />
+            </android.support.design.widget.TextInputLayout>
 
-        </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_below="@id/id_text_input_layout"
+            android:layout_below="@id/center_input_layout"
             >
             <Button
                 android:id="@+id/id_bt_camera"

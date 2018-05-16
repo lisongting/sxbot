@@ -43,9 +43,8 @@
         <!--&lt;!&ndash;<item name="android:windowBackground">@android:color/transparent</item>&ndash;&gt;-->
         <!--<item name="android:backgroundDimEnabled">true</item>&lt;!&ndash;activity不变暗&ndash;&gt;-->
         <!--<item name="android:background">@drawable/dialog_bg</item>-->
-        <!--<item name="android:windowEnterAnimation">@anim/push_bottom_in</item>-->
+        <!--<item name="android:windowEnterAnimation">@anim/anim_list_in</item>-->
         <!--<item name="android:windowExitAnimation">@anim/push_bottom_out</item>-->
     <!--</style>-->
-
 
 </resources>

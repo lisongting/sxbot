@@ -34,7 +34,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = inflater.inflate(R.layout.indicator_list_item, parent, false);
         final ViewHolder viewHolder = new ViewHolder(view);
-
         return viewHolder;
     }
 

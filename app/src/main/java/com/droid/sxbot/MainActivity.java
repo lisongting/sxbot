@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         initConfiguration();
 
         if (savedInstanceState == null) {
-//            log("savedInstanceState is null");
             fragmentManager = getSupportFragmentManager();
             Bundle b = new Bundle();
             if (Util.isPortrait(this)) {
@@ -115,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, sceneFragment, sceneFragment.getClass().getSimpleName())
                     .add(R.id.container, userFragment, userFragment.getClass().getSimpleName())
                     .commit();
-//            bottomNavigationView.setSelectedItemId(R.id.robot_state);
-            bottomNavigationView.setSelectedItemId(R.id.user);
+            bottomNavigationView.setSelectedItemId(R.id.robot_state);
+//            bottomNavigationView.setSelectedItemId(R.id.user);
         } else {
             log("restore savedInstanceState ");
             fragmentManager = getSupportFragmentManager();

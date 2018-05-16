@@ -65,4 +65,10 @@
         <item>xiaoqi</item>
         <item>vixf</item>
     </string-array>
+
+    <string-array name="user_group">
+        <item>zdzn</item>
+        <item>guest</item>
+        <item>添加分组</item>
+    </string-array>
 </resources>

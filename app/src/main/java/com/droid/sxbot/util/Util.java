@@ -1,5 +1,6 @@
 package com.droid.sxbot.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -158,6 +159,25 @@ public class Util {
         display.getMetrics(metrics);
 
         return metrics;
+    }
+
+    public static void closeSoftKeyboard(Activity activity) {
+        // 虚拟键盘隐藏 判断view是否为空
+//        View view = activity.getWindow().peekDecorView();
+//        if (view != null) {
+//            // 隐藏虚拟键盘
+//            InputMethodManager inputmanger = (InputMethodManager) activity
+//                    .getSystemService(Activity.INPUT_METHOD_SERVICE);
+//             if(inputmanger.isActive() && activity.getWindow().getCurrentFocus() != null){
+//                 inputmanger.hideSoftInputFromWindow(view.getWindowToken(),0);
+//             }
+//        }
+//        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+//        if(imm.isActive()&&getCurrentFocus()!=null){
+//            if (getCurrentFocus().getWindowToken()!=null) {
+//                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//            }
+//        }
     }
 
     public static void close(Closeable... closeList) {
