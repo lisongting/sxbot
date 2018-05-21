@@ -90,7 +90,8 @@ public class UserListPresenter implements UserListContract.Presenter {
                     @Override
                     public UserInfo apply(final String id) throws Exception {
                         final UserInfo userInfo = new UserInfo();
-                        userInfo.setName(Util.hexStringToString(id));
+//                        userInfo.setName(Util.hexStringToString(id));
+                        userInfo.parseNameAndGroup(id);
                         service.getUserFace(id)
                                 .subscribe(new Consumer<UserFaceResult>() {
                                     @Override
@@ -100,6 +101,7 @@ public class UserListPresenter implements UserListContract.Presenter {
                                         userInfo.setFace(bitmapWeakReference.get());
                                     }
                                 });
+                        Log.i("tag", userInfo.toString());
                         return userInfo;
                     }
                 })

@@ -104,7 +104,7 @@ public class RegisterFragment extends DialogFragment {
                 if (userGroup.equals(group)) {
                     Toast.makeText(getContext(), "请选择一个分组", Toast.LENGTH_SHORT).show();
                 }else {
-                    if (userName.length()>2) {
+                    if (userName.length()>=2) {
                         dismiss();
                         Intent intent = new Intent(getContext(), CameraActivity.class);
                         intent.putExtra("userName", userGroup+"_"+userName);

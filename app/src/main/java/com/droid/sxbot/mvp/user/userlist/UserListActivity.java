@@ -98,7 +98,7 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
 
         userListAdapter.setOnDeleteListener(new UserListAdapter.OnDeleteListener() {
             @Override
-            public void onDelete(int position, final String name) {
+            public void onDelete(int position,final String group, final String name) {
                 if (dialog != null) {
                     fragmentManager.beginTransaction().remove(dialog).commit();
                 }
@@ -115,7 +115,13 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
                             @Override
                             public void onConfirm() {
                                 userListAdapter.setDeleteMode(false);
-                                presenter.deleteUser(Util.makeUserNameToHex(name));
+                                StringBuilder sb = new StringBuilder();
+                                if (group.length() > 0) {
+                                    sb.append(group);
+                                    sb.append('_');
+                                }
+                                sb.append(name);
+                                presenter.deleteUser(Util.makeUserNameToHex(sb.toString()));
                             }
                         });
                 dialog.show(fragmentManager, "dialog");

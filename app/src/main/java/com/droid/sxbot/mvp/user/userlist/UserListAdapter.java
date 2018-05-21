@@ -28,7 +28,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserIt
     private OnDeleteListener deleteListener;
 
     interface OnDeleteListener{
-        void onDelete(int position, String name);
+        void onDelete(int position,String group, String name);
     }
     
     public UserListAdapter(Context context) {
@@ -54,6 +54,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserIt
     public void onBindViewHolder(UserItemViewHolder holder, int position) {
         holder.userName.setText(userInfoList.get(position).getName());
         holder.userImg.setImageBitmap(userInfoList.get(position).getFace());
+        StringBuilder sb = new StringBuilder("组名：");
+        sb.append(userInfoList.get(position).getGroupName());
+        holder.groupName.setText(sb.toString());
         if (isDeleteButtonOn) {
             holder.deleteImg.setVisibility(View.VISIBLE);
         } else {
@@ -112,19 +115,21 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserIt
         private ImageView userImg;
         private TextView userName;
         private ImageView deleteImg;
+        private TextView groupName;
         
         public UserItemViewHolder(View itemView) {
             super(itemView);
             userImg = itemView.findViewById(R.id.tv_user_head);
             userName = itemView.findViewById(R.id.tv_user_name);
             deleteImg = itemView.findViewById(R.id.iv_delete_user);
-
+            groupName = itemView.findViewById(R.id.tv_group_name);
             deleteImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (deleteListener != null) {
                         int pos  = getLayoutPosition();
-                        deleteListener.onDelete(pos,userInfoList.get(pos).getName());
+                        deleteListener.onDelete(pos,userInfoList.get(pos).getGroupName()
+                                ,userInfoList.get(pos).getName());
                     }
                 }
             });
