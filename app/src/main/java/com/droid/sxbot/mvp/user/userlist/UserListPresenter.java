@@ -11,13 +11,13 @@ import com.droid.sxbot.entity.UserFaceResult;
 import com.droid.sxbot.entity.UserIdList;
 import com.droid.sxbot.entity.UserInfo;
 import com.droid.sxbot.util.ImageUtils;
-import com.droid.sxbot.util.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -167,8 +167,10 @@ public class UserListPresenter implements UserListContract.Presenter {
                     @Override
                     public void onNext(Integer integer) {
                         if (integer == 0) {
-                         view.showInfo("删除成功");
-                            view.removeUser(Util.hexStringToString(userId));
+                            view.showInfo("删除成功");
+                            UserInfo info = new UserInfo();
+                            info.parseNameAndGroup(userId);
+                            view.removeUser(info.getName());
                         }
                     }
                     @Override

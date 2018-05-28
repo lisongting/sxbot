@@ -89,7 +89,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserIt
             if (userInfoList.get(i).getName().equals(name)) {
                 pos = i;
                 userInfoList.remove(pos);
-                notifyDataSetChanged();
+                notifyItemRemoved(pos);
                 break;
             }
         }

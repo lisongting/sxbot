@@ -173,6 +173,7 @@ public class UserListActivity extends AppCompatActivity implements UserListContr
 
     public void removeUser(String name){
         userListAdapter.removeUser(name);
+        recyclerView.setAdapter(userListAdapter);
     }
 
     @Override

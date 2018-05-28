@@ -173,6 +173,7 @@ public class CameraActivity extends AppCompatActivity implements RegisterContrac
                     log("faceBitmap is null");
                     return;
                 }
+                Toast.makeText(CameraActivity.this, "正在注册，请稍候...", Toast.LENGTH_LONG).show();
                 Matrix matrix = new Matrix();
                 matrix.postRotate(ivShowRotateAngle);
                 //实际发给服务器是旋转过后图像

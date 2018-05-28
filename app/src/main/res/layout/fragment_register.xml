@@ -29,6 +29,15 @@
             android:layout_marginBottom="50dp"
             />
 
+        <ViewStub
+            android:id="@+id/id_view_stub"
+            android:inflatedId="@+id/id_inflate_view_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout="@layout/dialog_register_mode"
+            android:layout_centerInParent="true"
+            />
+
         <LinearLayout
             android:id="@+id/center_input_layout"
             android:layout_width="wrap_content"
@@ -79,6 +88,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/id_button_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"

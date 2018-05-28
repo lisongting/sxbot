@@ -1,5 +1,7 @@
 package com.droid.sxbot.mvp.user.register;
 
+import android.util.Log;
+
 import com.droid.sxbot.Config;
 import com.droid.sxbot.RecognitionRetrofit;
 import com.droid.sxbot.entity.UserRegisterResult;
@@ -30,6 +32,19 @@ public class RegisterPresenter implements RegisterContract.Presenter {
     public RegisterPresenter(RegisterContract.View v){
         this.view = v;
         start();
+    }
+
+    @Override
+    public void start() {
+        StringBuilder baseUrl = new StringBuilder("http://");
+        baseUrl.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
+        retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl.toString())
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build();
+
+        api = retrofit.create(RecognitionRetrofit.class);
     }
 
     @Override
@@ -67,6 +82,7 @@ public class RegisterPresenter implements RegisterContract.Presenter {
                     @Override
                     public void onError(Throwable e) {
                         view.showInfo("注册失败，请检查网络和服务器配置");
+                        Log.i("RegisterPresenter", e.getMessage());
                     }
 
                     @Override
@@ -75,16 +91,5 @@ public class RegisterPresenter implements RegisterContract.Presenter {
                 });
     }
 
-    @Override
-    public void start() {
-        StringBuilder baseUrl = new StringBuilder("http://");
-        baseUrl.append(Config.RECOGNITION_SERVER_IP).append(":").append(Config.RECOGNITION_SERVER_PORT).append("/");
-        retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl.toString())
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .build();
 
-        api = retrofit.create(RecognitionRetrofit.class);
-    }
 }
