@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -14,8 +14,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/actionbar_bg"
-        android:layout_below="@id/status_bar_view">
+        android:background="@drawable/actionbar_bg">
         <ImageButton
             android:id="@+id/ib_back"
             android:layout_width="wrap_content"
@@ -44,11 +43,12 @@
             android:background="@drawable/ic_switch_camera"/>
     </RelativeLayout>
 
-    <FrameLayout
+   <FrameLayout
         android:id="@+id/container"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_centerInParent="true">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
     </FrameLayout>
 
-</RelativeLayout>
+</LinearLayout>

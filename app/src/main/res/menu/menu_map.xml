@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mode_adjust_map"
+        android:title="缩放调节模式"
+        />
+
+    <item
+        android:id="@+id/mode_select_point"
+        android:title="地图选点模式"/>
+
+
+    <item
+        android:id="@+id/mode_reset_map"
+        android:title="地图重置"/>
+
+    <item
+        android:id="@+id/mode_clear_points"
+        android:title="位置点清空"/>
+</menu>

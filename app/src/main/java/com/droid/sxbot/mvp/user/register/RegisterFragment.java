@@ -199,7 +199,7 @@ public class RegisterFragment extends DialogFragment implements RegisterContract
                 dismiss();
                 Intent intent = new Intent(getContext(), CameraActivity.class);
                 intent.putExtra("userName", userGroup+"_"+userName);
-                Toast.makeText(getContext(), userGroup+"_"+userName, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), userGroup+"_"+userName, Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             }
         });
@@ -214,7 +214,7 @@ public class RegisterFragment extends DialogFragment implements RegisterContract
         btSelectModeConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (faceBitmap != null) {
+                if (faceBitmap != null){
                     Toast.makeText(getContext(), "正在注册，请稍候...", Toast.LENGTH_LONG).show();
                     String hexStr = Util.makeUserNameToHex(userGroup + "_" + userName);
                     presenter.register(hexStr,

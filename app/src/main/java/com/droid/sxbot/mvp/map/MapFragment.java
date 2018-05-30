@@ -237,7 +237,7 @@ public class MapFragment extends Fragment implements MapContract.View{
                 }
                 if (fileList.size() == 0) {
                     Toast.makeText(getContext(),"您尚未添加任何音频", Toast.LENGTH_SHORT).show();
-                }else if(fileList.size()>0){
+                }else {
                     if (hasBlankFile) {
                         if (dialog != null) {
                             fragmentManager.beginTransaction().remove(dialog).commit();
@@ -265,9 +265,9 @@ public class MapFragment extends Fragment implements MapContract.View{
         btClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mapView.clearAll();
                 indicatorList.removeAll(indicatorList);
                 adapter.notifyDataSetChanged();
-                mapView.clearAll();
             }
         });
     }
@@ -304,16 +304,15 @@ public class MapFragment extends Fragment implements MapContract.View{
                             dialog.setModeAndContent(
                                     AnimateDialog.DIALOG_STYLE_SHOW_CONTENT,"上传成功", false, null);
                             dialog.show(fragmentManager, "dialog");
+                            //只有在文件传输成功的情况下才发送机器人位置点和音频列表
                             if (Config.isRosServerConnected) {
-                                //todo:
                                 App app = (App) getActivity().getApplication();
                                 if (app.getRosServiceProxy() != null) {
                                     presenter.setServiceProxy(app.getRosServiceProxy());
                                 }
                                 presenter.publishPoints(indicatorList);
                             } else {
-                                log("ros服务端未连接");
-                                //Toast.makeText(getContext(), "Ros服务端未连接", Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(getContext(), "Ros服务端未连接", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -520,6 +519,10 @@ public class MapFragment extends Fragment implements MapContract.View{
             fragmentManager.putFragment(outState, "dialog", dialog);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    public void setMapMode(int mode) {
+        mapView.setMode(mode);
     }
 
     @Override

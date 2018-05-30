@@ -31,6 +31,11 @@ public class MapPresenter implements MapContract.Presenter {
     private int completedCount = 0;
     private int totalCount = -1;
     private RosConnectionService.ServiceBinder proxy;
+    //地图的宽高像素，指的是实际的图片像素而不是显示在手机中的屏幕像素
+    private static final int MAP_WIDTH_PIXEL = 568;
+    private static final int MAP_HEIGHT_PIXEL = 1118;
+    //每个像素0.05米
+    private static final float METER_PER_PIXEL = 0.05f;
 
     public MapPresenter(MapContract.View view) {
         this.view = view;
@@ -45,34 +50,51 @@ public class MapPresenter implements MapContract.Presenter {
 
     @Override
     public void publishPoints(List<Indicator> positionList) {
+
+        JSONObject advertiseMsg = new JSONObject();
+        try {
+            advertiseMsg.put("op", "advertise");
+            advertiseMsg.put("topic", Constant.PUBLISH_TOPIC_POSE_AUDIO_ARRAY);
+            advertiseMsg.put("type", "xbot_navigoals/PoseAudioArray");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        proxy.sendJson(advertiseMsg.toString());
+
+
         JSONObject body = new JSONObject();
         JSONArray jsonArray = new JSONArray();
+        JSONObject msg = new JSONObject();
         for(int i=0;i<positionList.size();i++) {
             JSONObject object = new JSONObject();
             Indicator indicator = positionList.get(i);
-            //todo:进行位置点坐标转换
             try {
-                object.put("x", indicator.getX());
-                object.put("y", indicator.getY());
+                object.put("x", indicator.getX() * MAP_WIDTH_PIXEL * METER_PER_PIXEL);
+                object.put("y", indicator.getY() * MAP_HEIGHT_PIXEL * METER_PER_PIXEL);
                 object.put("theta", indicator.getTheta());
                 if (indicator.getFile().length() != 0) {
-                    object.put("file", indicator.getFile());
+                    String file = indicator.getFile();
+                    String briefFile = file.substring(file.lastIndexOf("/") + 1, file.length());
+                    object.put("file", briefFile);
                 } else {
-                    object.put("file", "none");
+                    object.put("file", "");
                 }
                 jsonArray.put(object);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+
         try {
+            msg.put("array", jsonArray);
             body.put("op", "publish");
-            body.put("topic", Constant.PUBLISH_TOPIC_POSE_AND_AUDIO);
-            body.put("msg", jsonArray.toString());
+            body.put("topic", Constant.PUBLISH_TOPIC_POSE_AUDIO_ARRAY);
+            body.put("msg", msg);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         proxy.sendJson(body.toString());
+        log("publish:" + body.toString());
     }
 
     @Override

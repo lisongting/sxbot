@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, userFragment, userFragment.getClass().getSimpleName())
                     .commit();
             bottomNavigationView.setSelectedItemId(R.id.robot_state);
-//            bottomNavigationView.setSelectedItemId(R.id.user);
+//            bottomNavigationView.setSelectedItemId(R.id.scene);
         } else {
             log("restore savedInstanceState ");
             fragmentManager = getSupportFragmentManager();

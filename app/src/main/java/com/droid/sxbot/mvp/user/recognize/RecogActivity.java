@@ -3,12 +3,13 @@ package com.droid.sxbot.mvp.user.recognize;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 import com.droid.sxbot.R;
 import com.droid.sxbot.util.Util;
@@ -41,8 +42,8 @@ public class RecogActivity extends AppCompatActivity {
         if (metrics.heightPixels > 2000) {
             int width = metrics.widthPixels;
             int height = metrics.heightPixels;
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams((int)(width * 0.6), (int)(height * 0.6));
-            params.addRule(RelativeLayout.CENTER_IN_PARENT);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams((int)(width * 0.7), (int)(height * 0.7));
+            params.gravity = Gravity.CENTER_HORIZONTAL;
             frameLayout.setLayoutParams(params);
             frameLayout.requestLayout();
         }

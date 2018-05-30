@@ -27,8 +27,8 @@ public class Constant {
     //发布：用于控制电机电源的topic
     public static final String PUBLISH_TOPIC_CMD_MACHINERY_POWER = "/mobile_base/commands/power";
 
-    //todo:发布：用于将位置点和音频信息发送给Xbot
-    public static final String PUBLISH_TOPIC_POSE_AND_AUDIO = "";
+    //发布：设置Xbot的一系列位置点，并附带音频
+    public static final String PUBLISH_TOPIC_POSE_AUDIO_ARRAY = "/mobile_base/pose_audio_array";
 
     //讯飞开放平台中获得的APPID
     public static final String APPID = "59198461";

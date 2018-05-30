@@ -443,6 +443,9 @@ public class RecogFragment extends Fragment implements RecogContract.View{
             return;
         }
         if (dialog != null) {
+            if(dialog.isVisible()){
+                return;
+            }
             fragmentManager.beginTransaction().remove(dialog).commit();
         }
         dialog = new AnimateDialog();

@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="已选列表"
+            android:text="位置点列表"
             android:textStyle="bold"
             android:textSize="16sp"
             />
