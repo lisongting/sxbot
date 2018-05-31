@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
+import com.tencent.bugly.crashreport.CrashReport;
 
 /**
  * Created by lisongting on 2017/10/9.
@@ -61,6 +62,8 @@ public class App extends Application {
         bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
 
         SpeechUtility.createUtility(this, SpeechConstant.APPID +"="+Constant.APPID);
+
+        CrashReport.initCrashReport(getApplicationContext(), Constant.BUGLY_APPID, false);
     }
 
     public RosConnectionService.ServiceBinder getRosServiceProxy(){
@@ -77,7 +80,6 @@ public class App extends Application {
         super.onTerminate();
 
     }
-
 
     private void log(String s) {
         Log.i(TAG,TAG+" -- "+ s);
